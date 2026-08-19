@@ -87,7 +87,26 @@ migration window where product pages look empty.
 ```bash
 npm install
 cp .env.example .env      # then fill in the Storefront token
+npm run doctor            # verifies the credentials actually work
 npx expo start
+```
+
+`npm run doctor` calls the real Storefront API and checks the OAuth
+configuration, so a wrong token is reported as a wrong token rather than
+surfacing later as an empty catalogue.
+
+### Signing in needs a development build
+
+Expo Go cannot claim the `shop.{shop_id}.*` URL scheme that Shopify mandates
+for mobile OAuth callbacks, so the browser has nowhere to hand control back to
+and sign-in cannot complete there. Everything else — catalogue, search,
+filters, the bag and checkout — works in Expo Go.
+
+To exercise accounts, build a development client:
+
+```bash
+eas init
+eas build --profile development --platform android
 ```
 
 Without credentials the app shows a setup screen with the exact steps, rather
@@ -173,6 +192,7 @@ the app runs fine before any of this is done.
 
 | Command | What it does |
 | --- | --- |
+| `npm run doctor` | Check `.env` against the live store before running anything |
 | `npm start` | Start the dev server |
 | `npm run ios` / `npm run android` | Open on a simulator or device |
 | `npm test` | Run the unit tests |

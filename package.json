@@ -14,7 +14,8 @@
     "test:watch": "jest --watch",
     "check": "npm run lint && npm test",
     "push:serve": "node server/push-server.mjs serve",
-    "push:stats": "node server/push-server.mjs stats"
+    "push:stats": "node server/push-server.mjs stats",
+    "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",

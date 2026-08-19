@@ -147,12 +147,25 @@ in `src/customer/graphql.ts` was validated against Shopify's published schema
 before it was written, and the address form uses a state picker because a typed
 state name is silently rejected.
 
-**Setup.** In Shopify admin → **Settings → Customer accounts → Customer Account
-API**: enable the API, copy the **Client ID** into
-`EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID`, and add `ownly://auth/callback` to the
-allowed callback URIs. Leave the client id blank and the app hides sign-in,
-orders, addresses and profile entirely rather than showing a button that cannot
-work — so the rest of the app runs fine before you get to this.
+**Setup.** The Customer Account API credentials are *not* under Settings →
+Customer accounts. They live in the **Headless** sales channel:
+
+1. Shopify admin → **Sales channels → +** → install **Headless**.
+2. Create a storefront, then open **Customer Account API settings**.
+3. Set the client type to **Mobile** (or **Public**).
+4. Copy the **Client ID** into `EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID`.
+5. Under **Application setup → Callback URI(s)**, add
+   `shop.94983258393.ownly://callback`.
+
+Step 5 is not a free choice. Shopify requires mobile clients to use a
+`shop.{shop_id}.*` custom scheme so the scheme is globally unique, and rejects a
+generic one like `ownly://`. That scheme is declared alongside the app's own in
+`app.json`, and `env.ts` derives the redirect URI from the shop id so the two
+cannot drift apart.
+
+Leave the client id blank and the app hides sign-in, orders, addresses and
+profile entirely rather than showing a button that cannot work — so the rest of
+the app runs fine before any of this is done.
 
 ---
 

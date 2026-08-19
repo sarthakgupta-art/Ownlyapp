@@ -26,6 +26,7 @@ function readEnv(key: string): string {
 const storeDomain = readEnv('EXPO_PUBLIC_SHOPIFY_STORE_DOMAIN');
 const storefrontToken = readEnv('EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN');
 const customerClientId = readEnv('EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID');
+const shopId = readEnv('EXPO_PUBLIC_SHOPIFY_SHOP_ID');
 
 export const env = {
   storeDomain,
@@ -42,12 +43,18 @@ export const env = {
 
   /** Numeric shop id, used to derive Customer Account API endpoints if the
    *  well-known discovery documents cannot be reached. */
-  shopId: readEnv('EXPO_PUBLIC_SHOPIFY_SHOP_ID'),
+  shopId,
   /** Public OAuth client id from Shopify admin → Customer accounts → API. */
   customerClientId,
-  /** Must exactly match a callback URI allow-listed in that same settings page. */
+  /**
+   * Must exactly match a callback URI allow-listed in the Customer Account API
+   * settings. Shopify requires mobile clients to use a `shop.{shop_id}.*`
+   * custom scheme so the scheme is globally unique — a generic `ownly://` is
+   * rejected — hence deriving it from the shop id rather than hard-coding.
+   */
   customerRedirectUri:
-    readEnv('EXPO_PUBLIC_CUSTOMER_ACCOUNT_REDIRECT_URI') || 'ownly://auth/callback',
+    readEnv('EXPO_PUBLIC_CUSTOMER_ACCOUNT_REDIRECT_URI') ||
+    (shopId ? `shop.${shopId}.ownly://callback` : ''),
   customerApiVersion: readEnv('EXPO_PUBLIC_CUSTOMER_API_VERSION') || '2026-07',
   /** Currency the storefront prices in. Shopify still returns the real code per price. */
   fallbackCurrency: 'INR',

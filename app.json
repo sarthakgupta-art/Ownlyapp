@@ -4,7 +4,7 @@
     "slug": "ownly-club",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "ownly",
+    "scheme": ["ownly", "shop.94983258393.ownly"],
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "primaryColor": "#141414",

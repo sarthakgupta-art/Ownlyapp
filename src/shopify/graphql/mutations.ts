@@ -84,6 +84,16 @@ export const CART_BUYER_IDENTITY_UPDATE_MUTATION = /* GraphQL */ `
   ${CART_DEPS}
 `;
 
+/**
+ * NOTE: every `customerAccessToken*` and `customer*` mutation below belongs to
+ * the LEGACY customer-account flow, which Shopify serves only for stores on
+ * classic customer accounts.
+ *
+ * ownlyclub.in runs NEW_CUSTOMER_ACCOUNTS, so these will fail against it until
+ * the app is migrated to the OAuth-based Customer Account API. See the
+ * "Customer accounts" section of the README. Catalogue, cart and checkout are
+ * unaffected — none of them need a customer session.
+ */
 export const CUSTOMER_ACCESS_TOKEN_CREATE_MUTATION = /* GraphQL */ `
   mutation CustomerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
     customerAccessTokenCreate(input: $input) {

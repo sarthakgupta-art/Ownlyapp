@@ -25,7 +25,13 @@ const storefrontToken = readEnv('EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN');
 export const env = {
   storeDomain,
   storefrontToken,
-  apiVersion: readEnv('EXPO_PUBLIC_SHOPIFY_API_VERSION') || '2025-07',
+  /**
+   * Shopify supports roughly the last four quarterly versions. A request to a
+   * retired version is silently served by the oldest supported one instead of
+   * failing, so pinning a stale version here would quietly change behaviour
+   * rather than error. Keep this within a year of the current release.
+   */
+  apiVersion: readEnv('EXPO_PUBLIC_SHOPIFY_API_VERSION') || '2026-07',
   storefrontUrl: (readEnv('EXPO_PUBLIC_STOREFRONT_URL') || 'https://ownlyclub.in').replace(/\/$/, ''),
   pushRegistrationUrl: readEnv('EXPO_PUBLIC_PUSH_REGISTRATION_URL'),
   /** Currency the storefront prices in. Shopify still returns the real code per price. */

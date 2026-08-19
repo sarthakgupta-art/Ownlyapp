@@ -115,6 +115,30 @@ The Storefront token is designed to be public and is safe in the bundle. The
 **Admin** API token is not, and must never appear in `.env` or anywhere else in
 this repo.
 
+### Customer accounts — action required
+
+The store runs **new customer accounts** (`customerAccountsVersion:
+NEW_CUSTOMER_ACCOUNTS`), which is Shopify's passwordless, OAuth-based system.
+
+The account screens in this app — sign in, register, order history, saved
+addresses, profile — are currently built on the **legacy** Storefront
+`customerAccessTokenCreate` flow, which only works on stores using classic
+customer accounts. **They will not work against this store as written.**
+
+Everything else is unaffected: browsing, search, filters, the bag and checkout
+do not need a customer session. Checkout still collects the buyer's identity
+itself, so orders, confirmation emails and tracking all work today.
+
+Two ways forward:
+
+1. **Migrate the app to the Customer Account API** (recommended). OAuth2 with
+   PKCE via `expo-auth-session`, then query the separate Customer Account API
+   endpoint for orders and addresses. Forward-compatible, and leaves the web
+   store's login untouched.
+2. **Switch the store to classic customer accounts** in Shopify admin. The
+   existing code then works unchanged, but classic accounts are on Shopify's
+   deprecation path and the change also affects the web store's login.
+
 ---
 
 ## Commands

@@ -4,14 +4,16 @@ import { useRouter } from 'expo-router';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
 import { Field } from '@/components/Field';
+import { PickerField } from '@/components/PickerField';
 import { Badge, Divider, EmptyState, Loading, Screen } from '@/components/Layout';
 import { Text } from '@/components/Text';
 import { Icon } from '@/components/Icon';
-import { createAddress, deleteAddress, setDefaultAddress, updateAddress, type AddressInput } from '@/shopify/api';
-import { describeError } from '@/shopify/client';
+import { createAddress, deleteAddress, setDefaultAddress, updateAddress } from '@/customer/api';
+import { describeCustomerError } from '@/customer/client';
+import type { AddressInput, CustomerAddress } from '@/customer/types';
 import { useAuth } from '@/store/auth';
+import { DEFAULT_TERRITORY_CODE, INDIAN_REGIONS, isValidRegionCode, regionName } from '@/lib/regions';
 import { validatePhone, validatePincode, validateRequired } from '@/lib/validate';
-import type { CustomerAddress } from '@/shopify/types';
 import { colors, layout, radius, spacing } from '@/theme/tokens';
 
 const EMPTY_FORM: AddressInput = {
@@ -20,14 +22,22 @@ const EMPTY_FORM: AddressInput = {
   address1: '',
   address2: '',
   city: '',
-  province: '',
+  zoneCode: '',
+  territoryCode: DEFAULT_TERRITORY_CODE,
   zip: '',
-  country: 'India',
-  phone: '',
+  phoneNumber: '',
 };
 
+const REGION_OPTIONS = INDIAN_REGIONS.map((r) => ({ value: r.code, label: r.name }));
+
 function formatAddress(address: CustomerAddress): string {
-  return [address.address1, address.address2, address.city, address.province, address.zip, address.country]
+  return [
+    address.address1,
+    address.address2,
+    address.city,
+    regionName(address.zoneCode),
+    address.zip,
+  ]
     .filter(Boolean)
     .join(', ');
 }
@@ -48,8 +58,8 @@ function AddressForm({
   const [form, setForm] = useState<AddressInput>(EMPTY_FORM);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
 
-  // Reload the form whenever the modal opens, so editing address A then B does
-  // not show A's values.
+  // Reseed whenever the sheet opens, so editing address A then B does not show
+  // A's values.
   const [wasVisible, setWasVisible] = useState(visible);
   if (visible !== wasVisible) {
     setWasVisible(visible);
@@ -62,10 +72,10 @@ function AddressForm({
               address1: initial.address1 ?? '',
               address2: initial.address2 ?? '',
               city: initial.city ?? '',
-              province: initial.province ?? '',
+              zoneCode: initial.zoneCode ?? '',
+              territoryCode: initial.territoryCode ?? DEFAULT_TERRITORY_CODE,
               zip: initial.zip ?? '',
-              country: initial.country ?? 'India',
-              phone: initial.phone ?? '',
+              phoneNumber: initial.phoneNumber ?? '',
             }
           : EMPTY_FORM,
       );
@@ -81,9 +91,9 @@ function AddressForm({
       firstName: validateRequired(form.firstName ?? '', 'First name'),
       address1: validateRequired(form.address1 ?? '', 'Address'),
       city: validateRequired(form.city ?? '', 'City'),
-      province: validateRequired(form.province ?? '', 'State'),
+      zoneCode: isValidRegionCode(form.zoneCode) ? null : 'Select a state.',
       zip: validatePincode(form.zip ?? ''),
-      phone: validatePhone(form.phone ?? ''),
+      phoneNumber: validatePhone(form.phoneNumber ?? ''),
     };
     setErrors(next);
     if (Object.values(next).some(Boolean)) return;
@@ -108,16 +118,25 @@ function AddressForm({
               value={form.firstName ?? ''}
               onChangeText={set('firstName')}
               error={errors.firstName}
+              autoComplete="given-name"
               style={styles.flex}
             />
-            <Field label="Last name" value={form.lastName ?? ''} onChangeText={set('lastName')} style={styles.flex} />
+            <Field
+              label="Last name"
+              value={form.lastName ?? ''}
+              onChangeText={set('lastName')}
+              autoComplete="family-name"
+              style={styles.flex}
+            />
           </View>
+
           <Field
             label="Address"
             value={form.address1 ?? ''}
             onChangeText={set('address1')}
             error={errors.address1}
             placeholder="House / flat, building, street"
+            autoComplete="street-address"
           />
           <Field
             label="Landmark (optional)"
@@ -125,8 +144,15 @@ function AddressForm({
             onChangeText={set('address2')}
             placeholder="Area, landmark"
           />
+
           <View style={styles.row}>
-            <Field label="City" value={form.city ?? ''} onChangeText={set('city')} error={errors.city} style={styles.flex} />
+            <Field
+              label="City"
+              value={form.city ?? ''}
+              onChangeText={set('city')}
+              error={errors.city}
+              style={styles.flex}
+            />
             <Field
               label="PIN code"
               value={form.zip ?? ''}
@@ -137,16 +163,25 @@ function AddressForm({
               style={styles.flex}
             />
           </View>
-          <Field label="State" value={form.province ?? ''} onChangeText={set('province')} error={errors.province} />
-          <Field label="Country" value={form.country ?? ''} onChangeText={set('country')} />
+
+          <PickerField
+            label="State"
+            value={form.zoneCode ?? null}
+            options={REGION_OPTIONS}
+            onChange={set('zoneCode')}
+            error={errors.zoneCode}
+            placeholder="Select a state"
+          />
+
           <Field
             label="Phone"
-            value={form.phone ?? ''}
-            onChangeText={set('phone')}
-            error={errors.phone}
+            value={form.phoneNumber ?? ''}
+            onChangeText={set('phoneNumber')}
+            error={errors.phoneNumber}
             keyboardType="phone-pad"
             hint="Used by the courier for delivery updates."
           />
+
           <Button label="Save address" full loading={saving} onPress={submit} style={styles.save} />
         </ScrollView>
       </Screen>
@@ -156,7 +191,8 @@ function AddressForm({
 
 export default function AddressesScreen() {
   const router = useRouter();
-  const token = useAuth((s) => s.token);
+  const accessToken = useAuth((s) => s.accessToken);
+  const getValidToken = useAuth((s) => s.getValidToken);
   const customer = useAuth((s) => s.customer);
   const ready = useAuth((s) => s.ready);
   const refreshCustomer = useAuth((s) => s.refreshCustomer);
@@ -167,26 +203,30 @@ export default function AddressesScreen() {
 
   const save = useCallback(
     async (values: AddressInput) => {
-      if (!token) return;
       setSaving(true);
       try {
+        const token = await getValidToken();
+        if (!token) throw new Error('Your session has expired. Please sign in again.');
+
         if (editing) await updateAddress(token, editing.id, values);
-        else await createAddress(token, values);
+        // The very first address a buyer saves should become their default,
+        // otherwise checkout has nothing to pre-fill.
+        else await createAddress(token, values, (customer?.addresses.length ?? 0) === 0);
+
         await refreshCustomer();
         setFormOpen(false);
         setEditing(null);
       } catch (error) {
-        Alert.alert('Could not save', describeError(error));
+        Alert.alert('Could not save', describeCustomerError(error));
       } finally {
         setSaving(false);
       }
     },
-    [token, editing, refreshCustomer],
+    [getValidToken, editing, refreshCustomer, customer?.addresses.length],
   );
 
   const remove = useCallback(
     (address: CustomerAddress) => {
-      if (!token) return;
       Alert.alert('Delete address?', formatAddress(address), [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -195,30 +235,33 @@ export default function AddressesScreen() {
           onPress: () => {
             void (async () => {
               try {
+                const token = await getValidToken();
+                if (!token) throw new Error('Your session has expired. Please sign in again.');
                 await deleteAddress(token, address.id);
                 await refreshCustomer();
               } catch (error) {
-                Alert.alert('Could not delete', describeError(error));
+                Alert.alert('Could not delete', describeCustomerError(error));
               }
             })();
           },
         },
       ]);
     },
-    [token, refreshCustomer],
+    [getValidToken, refreshCustomer],
   );
 
   const makeDefault = useCallback(
     async (address: CustomerAddress) => {
-      if (!token) return;
       try {
-        await setDefaultAddress(token, address.id);
+        const token = await getValidToken();
+        if (!token) throw new Error('Your session has expired. Please sign in again.');
+        await setDefaultAddress(token, address);
         await refreshCustomer();
       } catch (error) {
-        Alert.alert('Could not update', describeError(error));
+        Alert.alert('Could not update', describeCustomerError(error));
       }
     },
-    [token, refreshCustomer],
+    [getValidToken, refreshCustomer],
   );
 
   if (!ready) {
@@ -230,7 +273,7 @@ export default function AddressesScreen() {
     );
   }
 
-  if (!token) {
+  if (!accessToken) {
     return (
       <Screen>
         <AppHeader title="Addresses" showBack />
@@ -251,10 +294,7 @@ export default function AddressesScreen() {
       <AppHeader title="Addresses" showBack />
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
         {addresses.length === 0 ? (
-          <EmptyState
-            title="No saved addresses"
-            body="Add one now and checkout will be pre-filled next time."
-          />
+          <EmptyState title="No saved addresses" body="Add one now and checkout will be pre-filled next time." />
         ) : (
           addresses.map((address) => (
             <View key={address.id} style={styles.card}>
@@ -267,9 +307,9 @@ export default function AddressesScreen() {
               <Text variant="caption" tone="secondary">
                 {formatAddress(address)}
               </Text>
-              {address.phone ? (
+              {address.phoneNumber ? (
                 <Text variant="caption" tone="muted">
-                  {address.phone}
+                  {address.phoneNumber}
                 </Text>
               ) : null}
 

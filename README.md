@@ -115,29 +115,44 @@ The Storefront token is designed to be public and is safe in the bundle. The
 **Admin** API token is not, and must never appear in `.env` or anywhere else in
 this repo.
 
-### Customer accounts — action required
+### Customer accounts
 
 The store runs **new customer accounts** (`customerAccountsVersion:
-NEW_CUSTOMER_ACCOUNTS`), which is Shopify's passwordless, OAuth-based system.
+NEW_CUSTOMER_ACCOUNTS`) — Shopify's passwordless system, where the buyer gets a
+one-time code by email rather than typing a password.
 
-The account screens in this app — sign in, register, order history, saved
-addresses, profile — are currently built on the **legacy** Storefront
-`customerAccessTokenCreate` flow, which only works on stores using classic
-customer accounts. **They will not work against this store as written.**
+The app therefore authenticates through the **Customer Account API** using
+OAuth 2.0 with PKCE:
 
-Everything else is unaffected: browsing, search, filters, the bag and checkout
-do not need a customer session. Checkout still collects the buyer's identity
-itself, so orders, confirmation emails and tracking all work today.
+1. `signIn()` opens Shopify's hosted login in a real browser session. That is
+   deliberate — it is what lets password managers and passkeys work, and the app
+   never sees the buyer's credentials.
+2. The redirect returns an authorization code, which is exchanged for an access
+   token using a locally generated `code_verifier`. A mobile app cannot keep a
+   client secret, so PKCE is what makes the exchange safe.
+3. Access tokens are short-lived. The refresh token is what actually keeps
+   someone signed in between launches, so both are stored in the keychain and
+   `getValidToken()` transparently refreshes before every authenticated call.
 
-Two ways forward:
+Endpoints are **discovered at runtime** from `/.well-known/openid-configuration`
+and `/.well-known/customer-account-api` on the storefront domain, which is what
+Shopify recommends over hard-coding. The shop-id-derived URLs in
+`src/customer/discovery.ts` are only a fallback for the offline case.
 
-1. **Migrate the app to the Customer Account API** (recommended). OAuth2 with
-   PKCE via `expo-auth-session`, then query the separate Customer Account API
-   endpoint for orders and addresses. Forward-compatible, and leaves the web
-   store's login untouched.
-2. **Switch the store to classic customer accounts** in Shopify admin. The
-   existing code then works unchanged, but classic accounts are on Shopify's
-   deprecation path and the change also affects the web store's login.
+The Customer Account API is a different schema from the Storefront API, and the
+differences are easy to get wrong — `emailAddress` and `phoneNumber` are
+objects, not strings; orders expose `number`, not `orderNumber`; addresses take
+a `zoneCode` (`MH`) rather than a province name (`Maharashtra`). Every document
+in `src/customer/graphql.ts` was validated against Shopify's published schema
+before it was written, and the address form uses a state picker because a typed
+state name is silently rejected.
+
+**Setup.** In Shopify admin → **Settings → Customer accounts → Customer Account
+API**: enable the API, copy the **Client ID** into
+`EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID`, and add `ownly://auth/callback` to the
+allowed callback URIs. Leave the client id blank and the app hides sign-in,
+orders, addresses and profile entirely rather than showing a button that cannot
+work — so the rest of the app runs fine before you get to this.
 
 ---
 
@@ -164,10 +179,12 @@ app/                      Screens (expo-router, file-based)
   product/[handle]        Product detail
   collection/[handle]     Brand and collection listings
   checkout.tsx            Shopify hosted checkout in a WebView
+  auth/sign-in.tsx        OAuth hand-off to Shopify's hosted login
 src/
   catalog/                Department registry, attributes, query builder
   finder/                 Discovery quiz engine (department-agnostic)
-  shopify/                Storefront client, GraphQL documents, typed API
+  shopify/                Storefront client — catalogue, cart, checkout
+  customer/               Customer Account API — OAuth, orders, addresses
   store/                  Zustand stores: cart, auth, wishlist, preferences
   hooks/                  React Query bindings
   components/             UI library
@@ -180,7 +197,7 @@ server/                   Expo push registration + campaign sender
 | State | Where | Why |
 | --- | --- | --- |
 | Cart | Shopify, id in AsyncStorage | Totals, tax and discounts stay authoritative, and the `checkoutUrl` handed to the WebView is the cart the buyer just built |
-| Session token | Keychain / Keystore | It is a bearer credential |
+| OAuth access + refresh tokens | Keychain / Keystore | Both are bearer credentials; the refresh token is what survives a relaunch |
 | Wishlist | Product ids in AsyncStorage | Prices and stock re-read from Shopify on every visit, so a saved item never shows a stale price |
 | Catalogue | React Query cache | Paginated, deduped, refetched on pull |
 
@@ -262,17 +279,24 @@ Before the first submission:
 - Replace the `extra.eas.projectId` placeholder in `app.json` (`eas init` does this).
 - Add app icon and splash assets in `assets/`.
 - Set the real bundle identifier and package name if `in.ownlyclub.app` is not wanted.
-- Add the Storefront credentials as EAS secrets so production builds are not
-  built from a local `.env`.
+- Add the Storefront token and Customer Account API client id as EAS secrets so
+  production builds are not built from a local `.env`.
+- Confirm `ownly://auth/callback` is in the Customer Account API's allowed
+  callback URIs, or sign-in will fail in the production build.
 
 ---
 
 ## Testing
 
-94 unit tests cover the logic that fails *silently* rather than loudly: the
-Storefront query builder, the finder's ranking, attribute resolution and the
-department registry's invariants. Screens are verified by building and running
-the app, not by asserting on rendered markup.
+107 unit tests cover the logic that fails *silently* rather than loudly: the
+Storefront query builder, the finder's ranking, attribute resolution, the
+department registry's invariants, and the OAuth callback and base64url handling
+where a wrong result produces a misleading error from Shopify rather than an
+obvious one. Screens are verified by building and running the app, not by
+asserting on rendered markup.
+
+Every GraphQL document was validated against Shopify's published schemas before
+being committed.
 
 ```bash
 npm test

@@ -104,53 +104,6 @@ export interface Cart {
   discountCodes: { code: string; applicable: boolean }[];
 }
 
-export interface CustomerAddress {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  address1: string | null;
-  address2: string | null;
-  city: string | null;
-  province: string | null;
-  zip: string | null;
-  country: string | null;
-  phone: string | null;
-}
-
-export interface Customer {
-  id: string;
-  firstName: string | null;
-  lastName: string | null;
-  email: string | null;
-  phone: string | null;
-  acceptsMarketing: boolean;
-  defaultAddress: CustomerAddress | null;
-  addresses: CustomerAddress[];
-}
-
-export interface OrderLineItem {
-  title: string;
-  quantity: number;
-  variantTitle: string | null;
-  originalTotalPrice: Money;
-  image: Image | null;
-}
-
-export interface Order {
-  id: string;
-  orderNumber: number;
-  name: string;
-  processedAt: string;
-  financialStatus: string | null;
-  fulfillmentStatus: string;
-  statusUrl: string;
-  currentTotalPrice: Money;
-  subtotalPrice: Money | null;
-  totalShippingPrice: Money;
-  lineItems: OrderLineItem[];
-  shippingAddress: CustomerAddress | null;
-}
-
 export interface PageInfo {
   hasNextPage: boolean;
   endCursor: string | null;

@@ -15,12 +15,17 @@ function readEnv(key: string): string {
     EXPO_PUBLIC_SHOPIFY_API_VERSION: process.env.EXPO_PUBLIC_SHOPIFY_API_VERSION,
     EXPO_PUBLIC_STOREFRONT_URL: process.env.EXPO_PUBLIC_STOREFRONT_URL,
     EXPO_PUBLIC_PUSH_REGISTRATION_URL: process.env.EXPO_PUBLIC_PUSH_REGISTRATION_URL,
+    EXPO_PUBLIC_SHOPIFY_SHOP_ID: process.env.EXPO_PUBLIC_SHOPIFY_SHOP_ID,
+    EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID: process.env.EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID,
+    EXPO_PUBLIC_CUSTOMER_ACCOUNT_REDIRECT_URI: process.env.EXPO_PUBLIC_CUSTOMER_ACCOUNT_REDIRECT_URI,
+    EXPO_PUBLIC_CUSTOMER_API_VERSION: process.env.EXPO_PUBLIC_CUSTOMER_API_VERSION,
   };
   return (table[key] ?? '').trim();
 }
 
 const storeDomain = readEnv('EXPO_PUBLIC_SHOPIFY_STORE_DOMAIN');
 const storefrontToken = readEnv('EXPO_PUBLIC_SHOPIFY_STOREFRONT_TOKEN');
+const customerClientId = readEnv('EXPO_PUBLIC_CUSTOMER_ACCOUNT_CLIENT_ID');
 
 export const env = {
   storeDomain,
@@ -34,6 +39,16 @@ export const env = {
   apiVersion: readEnv('EXPO_PUBLIC_SHOPIFY_API_VERSION') || '2026-07',
   storefrontUrl: (readEnv('EXPO_PUBLIC_STOREFRONT_URL') || 'https://ownlyclub.in').replace(/\/$/, ''),
   pushRegistrationUrl: readEnv('EXPO_PUBLIC_PUSH_REGISTRATION_URL'),
+
+  /** Numeric shop id, used to derive Customer Account API endpoints if the
+   *  well-known discovery documents cannot be reached. */
+  shopId: readEnv('EXPO_PUBLIC_SHOPIFY_SHOP_ID'),
+  /** Public OAuth client id from Shopify admin → Customer accounts → API. */
+  customerClientId,
+  /** Must exactly match a callback URI allow-listed in that same settings page. */
+  customerRedirectUri:
+    readEnv('EXPO_PUBLIC_CUSTOMER_ACCOUNT_REDIRECT_URI') || 'ownly://auth/callback',
+  customerApiVersion: readEnv('EXPO_PUBLIC_CUSTOMER_API_VERSION') || '2026-07',
   /** Currency the storefront prices in. Shopify still returns the real code per price. */
   fallbackCurrency: 'INR',
   supportEmail: 'support@ownlyclub.in',
@@ -47,3 +62,10 @@ export const env = {
 export const isShopifyConfigured = storeDomain.length > 0 && storefrontToken.length > 0;
 
 export const storefrontEndpoint = `https://${storeDomain}/api/${env.apiVersion}/graphql.json`;
+
+/**
+ * Account features (sign in, orders, addresses, profile) need their own OAuth
+ * client, separate from the Storefront token. When it is absent the app hides
+ * those surfaces rather than showing a sign-in button that cannot work.
+ */
+export const isCustomerAccountsConfigured = customerClientId.length > 0;

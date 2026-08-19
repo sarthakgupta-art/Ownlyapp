@@ -6,15 +6,16 @@ import { Button } from '@/components/Button';
 import { Field } from '@/components/Field';
 import { EmptyState, Loading, Screen } from '@/components/Layout';
 import { Text } from '@/components/Text';
-import { updateCustomer } from '@/shopify/api';
-import { describeError } from '@/shopify/client';
+import { updateCustomer } from '@/customer/api';
+import { describeCustomerError } from '@/customer/client';
 import { useAuth } from '@/store/auth';
 import { validateRequired } from '@/lib/validate';
 import { layout, spacing } from '@/theme/tokens';
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const token = useAuth((s) => s.token);
+  const accessToken = useAuth((s) => s.accessToken);
+  const getValidToken = useAuth((s) => s.getValidToken);
   const customer = useAuth((s) => s.customer);
   const ready = useAuth((s) => s.ready);
   const refreshCustomer = useAuth((s) => s.refreshCustomer);
@@ -34,23 +35,22 @@ export default function ProfileScreen() {
   }, [customer]);
 
   const save = async () => {
-    if (!token) return;
     const next = { firstName: validateRequired(firstName, 'First name') };
     setErrors(next);
     if (next.firstName) return;
 
     setSaving(true);
     try {
+      const token = await getValidToken();
+      if (!token) throw new Error('Your session has expired. Please sign in again.');
       await updateCustomer(token, {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
-        // Shopify rejects an empty string here, so omit the field entirely.
-        ...(phone.trim() ? { phone: phone.trim() } : {}),
       });
       await refreshCustomer();
       Alert.alert('Saved', 'Your details have been updated.');
     } catch (error) {
-      Alert.alert('Could not save', describeError(error));
+      Alert.alert('Could not save', describeCustomerError(error));
     } finally {
       setSaving(false);
     }
@@ -65,7 +65,7 @@ export default function ProfileScreen() {
     );
   }
 
-  if (!token) {
+  if (!accessToken) {
     return (
       <Screen>
         <AppHeader title="Profile" showBack />

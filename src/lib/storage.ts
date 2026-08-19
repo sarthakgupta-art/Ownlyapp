@@ -85,4 +85,7 @@ export const storageKeys = {
   pushToken: 'ownly.push.token',
   pushPrefs: 'ownly.push.prefs',
   finderResult: 'ownly.finder.last',
+  customerEndpoints: 'ownly.customer.endpoints',
+  refreshToken: 'ownly.customer.refresh',
+  idToken: 'ownly.customer.idtoken',
 } as const;

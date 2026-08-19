@@ -149,21 +149,6 @@ export const CART_FRAGMENT = /* GraphQL */ `
   }
 `;
 
-export const ADDRESS_FRAGMENT = /* GraphQL */ `
-  fragment AddressFields on MailingAddress {
-    id
-    firstName
-    lastName
-    address1
-    address2
-    city
-    province
-    zip
-    country
-    phone
-  }
-`;
-
 /** Fragments every product-shaped query needs, concatenated for convenience. */
 export const PRODUCT_DEPS = [IMAGE_FRAGMENT, MONEY_FRAGMENT, PRODUCT_SUMMARY_FRAGMENT].join('\n');
 export const CART_DEPS = [IMAGE_FRAGMENT, MONEY_FRAGMENT, CART_FRAGMENT].join('\n');

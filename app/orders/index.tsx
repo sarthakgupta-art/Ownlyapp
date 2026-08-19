@@ -7,27 +7,32 @@ import { Badge, Divider, EmptyState, ErrorState, Loading, Screen } from '@/compo
 import { Text } from '@/components/Text';
 import { Icon } from '@/components/Icon';
 import { Button } from '@/components/Button';
-import { fetchOrders } from '@/shopify/api';
-import { describeError } from '@/shopify/client';
+import { fetchOrders } from '@/customer/api';
+import { describeCustomerError } from '@/customer/client';
+import type { Order } from '@/customer/types';
 import { useAuth } from '@/store/auth';
 import { formatDate, formatMoney, pluralise } from '@/lib/format';
-import type { Order } from '@/shopify/types';
 import { colors, layout, radius, spacing } from '@/theme/tokens';
 
 /** Shopify's fulfilment enum is SCREAMING_SNAKE; buyers should not see that. */
 function fulfilmentLabel(order: Order): { label: string; tone: 'accent' | 'neutral' } {
   switch (order.fulfillmentStatus) {
-    case 'FULFILLED':
+    case 'SUCCESS':
+    case 'DELIVERED':
       return { label: 'Delivered', tone: 'neutral' };
-    case 'PARTIALLY_FULFILLED':
-      return { label: 'Partly shipped', tone: 'accent' };
-    case 'IN_PROGRESS':
-    case 'OPEN':
-      return { label: 'Preparing', tone: 'accent' };
-    case 'ON_HOLD':
-      return { label: 'On hold', tone: 'accent' };
-    case 'RESTOCKED':
+    case 'IN_TRANSIT':
+    case 'OUT_FOR_DELIVERY':
+      return { label: 'On its way', tone: 'accent' };
+    case 'ATTEMPTED_DELIVERY':
+      return { label: 'Delivery attempted', tone: 'accent' };
+    case 'FAILURE':
+    case 'ERROR':
+      return { label: 'Delivery issue', tone: 'accent' };
+    case 'CANCELLED':
       return { label: 'Cancelled', tone: 'neutral' };
+    case null:
+    case undefined:
+      return { label: 'Preparing', tone: 'accent' };
     default:
       return { label: 'Processing', tone: 'accent' };
   }
@@ -36,6 +41,10 @@ function fulfilmentLabel(order: Order): { label: string; tone: 'accent' | 'neutr
 function OrderCard({ order }: { order: Order }) {
   const status = fulfilmentLabel(order);
   const itemCount = order.lineItems.reduce((sum, line) => sum + line.quantity, 0);
+  // Several parcels can carry the same tracking link; show each one once.
+  const tracking = order.tracking.filter(
+    (t, index, all) => t.url && all.findIndex((other) => other.url === t.url) === index,
+  );
 
   return (
     <View style={styles.card}>
@@ -48,6 +57,12 @@ function OrderCard({ order }: { order: Order }) {
         </View>
         <Badge label={status.label} tone={status.tone} />
       </View>
+
+      {order.estimatedDeliveryAt ? (
+        <Text variant="caption" tone="accent">
+          Estimated delivery {formatDate(order.estimatedDeliveryAt)}
+        </Text>
+      ) : null}
 
       <View style={styles.thumbs}>
         {order.lineItems.slice(0, 4).map((line, index) => (
@@ -71,20 +86,36 @@ function OrderCard({ order }: { order: Order }) {
       <Divider />
 
       <View style={styles.cardFooter}>
-        <Text variant="bodyStrong">{formatMoney(order.currentTotalPrice)}</Text>
-        {order.statusUrl ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Track order ${order.name}`}
-            onPress={() => void Linking.openURL(order.statusUrl)}
-            style={({ pressed }) => [styles.trackButton, pressed && styles.pressed]}
-          >
-            <Text variant="caption" tone="accent">
-              Track order
-            </Text>
-            <Icon name="external" size={14} color={colors.accent} />
-          </Pressable>
-        ) : null}
+        <Text variant="bodyStrong">{formatMoney(order.totalPrice)}</Text>
+        <View style={styles.footerLinks}>
+          {tracking.map((entry) => (
+            <Pressable
+              key={entry.url ?? entry.number ?? 'track'}
+              accessibilityRole="button"
+              accessibilityLabel={`Track parcel${entry.company ? ` with ${entry.company}` : ''}`}
+              onPress={() => entry.url && void Linking.openURL(entry.url)}
+              style={({ pressed }) => [styles.linkRow, pressed && styles.pressed]}
+            >
+              <Text variant="caption" tone="accent">
+                {entry.company ?? 'Track parcel'}
+              </Text>
+              <Icon name="external" size={14} color={colors.accent} />
+            </Pressable>
+          ))}
+          {tracking.length === 0 && order.statusPageUrl ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`View status of order ${order.name}`}
+              onPress={() => order.statusPageUrl && void Linking.openURL(order.statusPageUrl)}
+              style={({ pressed }) => [styles.linkRow, pressed && styles.pressed]}
+            >
+              <Text variant="caption" tone="accent">
+                View status
+              </Text>
+              <Icon name="external" size={14} color={colors.accent} />
+            </Pressable>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -92,15 +123,22 @@ function OrderCard({ order }: { order: Order }) {
 
 export default function OrdersScreen() {
   const router = useRouter();
-  const token = useAuth((s) => s.token);
+  const accessToken = useAuth((s) => s.accessToken);
+  const getValidToken = useAuth((s) => s.getValidToken);
   const ready = useAuth((s) => s.ready);
 
   const { data, isLoading, error, refetch, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ['orders', token],
-      enabled: Boolean(token),
+      queryKey: ['customer-orders', accessToken],
+      enabled: Boolean(accessToken),
       initialPageParam: null as string | null,
-      queryFn: ({ pageParam }) => fetchOrders({ token: token!, first: 15, after: pageParam }),
+      queryFn: async ({ pageParam }) => {
+        // Resolve the token per request rather than closing over it, so a page
+        // fetched an hour later refreshes instead of 401ing.
+        const token = await getValidToken();
+        if (!token) throw new Error('Your session has expired. Please sign in again.');
+        return fetchOrders({ accessToken: token, first: 15, after: pageParam });
+      },
       getNextPageParam: (lastPage) =>
         lastPage.pageInfo.hasNextPage ? lastPage.pageInfo.endCursor : undefined,
     });
@@ -114,7 +152,7 @@ export default function OrdersScreen() {
     );
   }
 
-  if (!token) {
+  if (!accessToken) {
     return (
       <Screen>
         <AppHeader title="My orders" showBack />
@@ -132,12 +170,10 @@ export default function OrdersScreen() {
     return (
       <Screen>
         <AppHeader title="My orders" showBack />
-        <ErrorState message={describeError(error)} onRetry={() => void refetch()} />
+        <ErrorState message={describeCustomerError(error)} onRetry={() => void refetch()} />
       </Screen>
     );
   }
-
-  const orders = data?.pages.flatMap((page) => page.items) ?? [];
 
   if (isLoading) {
     return (
@@ -147,6 +183,8 @@ export default function OrdersScreen() {
       </Screen>
     );
   }
+
+  const orders = data?.pages.flatMap((page) => page.items) ?? [];
 
   if (orders.length === 0) {
     return (
@@ -198,8 +236,9 @@ const styles = StyleSheet.create({
   thumbs: { flexDirection: 'row', gap: spacing.sm },
   thumb: { width: 52, height: 64, borderRadius: radius.sm, backgroundColor: colors.surfaceSunk },
   thumbMore: { alignItems: 'center', justifyContent: 'center' },
-  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  trackButton: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  cardFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: spacing.md },
+  footerLinks: { alignItems: 'flex-end', gap: spacing.xs },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   loadMore: { marginTop: spacing.md },
   pressed: { opacity: 0.6 },
 });

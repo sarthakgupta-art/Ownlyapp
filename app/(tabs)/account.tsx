@@ -45,11 +45,12 @@ function MenuRow({
 export default function AccountScreen() {
   const router = useRouter();
   const customer = useAuth((s) => s.customer);
-  const token = useAuth((s) => s.token);
-  const logout = useAuth((s) => s.logout);
+  const accessToken = useAuth((s) => s.accessToken);
+  const signOut = useAuth((s) => s.signOut);
+  const accountsAvailable = useAuth((s) => s.available);
   const savedCount = useWishlist((s) => s.ids.length);
 
-  const signedIn = token != null;
+  const signedIn = accessToken != null;
   const name = [customer?.firstName, customer?.lastName].filter(Boolean).join(' ');
 
   return (
@@ -65,23 +66,16 @@ export default function AccountScreen() {
               </Text>
             ) : null}
           </View>
-        ) : (
+        ) : accountsAvailable ? (
           <View style={styles.signInCard}>
             <Text variant="heading">Sign in to Ownly Club</Text>
             <Text variant="caption" tone="muted" style={styles.signInBody}>
-              Track orders, save addresses for a faster checkout, and keep your wishlist across devices.
+              Track orders, save addresses for a faster checkout, and keep your wishlist across devices. Shopify
+              emails you a one-time code — no password needed.
             </Text>
-            <View style={styles.signInActions}>
-              <Button label="Sign in" onPress={() => router.push('/auth/sign-in')} style={styles.flex} />
-              <Button
-                label="Create account"
-                variant="secondary"
-                onPress={() => router.push('/auth/register')}
-                style={styles.flex}
-              />
-            </View>
+            <Button label="Sign in or create an account" onPress={() => router.push('/auth/sign-in')} />
           </View>
-        )}
+        ) : null}
 
         <View style={styles.group}>
           {signedIn ? (
@@ -144,7 +138,7 @@ export default function AccountScreen() {
         </View>
 
         {signedIn ? (
-          <Button label="Sign out" variant="ghost" onPress={() => void logout()} style={styles.signOut} />
+          <Button label="Sign out" variant="ghost" onPress={() => void signOut()} style={styles.signOut} />
         ) : null}
 
         <Text variant="micro" tone="faint" center style={styles.version}>

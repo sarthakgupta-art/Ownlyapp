@@ -23,7 +23,7 @@ export default function BagScreen() {
   const removeLine = useCart((s) => s.removeLine);
   const applyDiscount = useCart((s) => s.applyDiscount);
   const removeDiscount = useCart((s) => s.removeDiscount);
-  const token = useAuth((s) => s.token);
+  const getValidToken = useAuth((s) => s.getValidToken);
   const attachCustomer = useCart((s) => s.attachCustomer);
 
   const [code, setCode] = useState('');
@@ -31,10 +31,12 @@ export default function BagScreen() {
   const goToCheckout = useCallback(async () => {
     if (!cart) return;
     // Re-attach the customer right before handing off, so a sign-in that
-    // happened after the cart was created still pre-fills checkout.
+    // happened after the cart was created still pre-fills checkout, and so a
+    // stale access token is refreshed rather than silently ignored.
+    const token = await getValidToken();
     if (token) await attachCustomer(token);
     router.push('/checkout');
-  }, [cart, token, attachCustomer, router]);
+  }, [cart, getValidToken, attachCustomer, router]);
 
   if (!isShopifyConfigured) return <SetupNotice />;
   if (!ready) {

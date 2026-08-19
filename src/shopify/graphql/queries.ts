@@ -1,11 +1,4 @@
-import {
-  ADDRESS_FRAGMENT,
-  CART_DEPS,
-  IMAGE_FRAGMENT,
-  MONEY_FRAGMENT,
-  PRODUCT_DEPS,
-  VARIANT_FRAGMENT,
-} from './fragments';
+import { CART_DEPS, IMAGE_FRAGMENT, PRODUCT_DEPS, VARIANT_FRAGMENT } from './fragments';
 
 export const PRODUCTS_QUERY = /* GraphQL */ `
   query Products($first: Int!, $after: String, $query: String, $sortKey: ProductSortKeys, $reverse: Boolean) {
@@ -179,80 +172,6 @@ export const CART_QUERY = /* GraphQL */ `
     }
   }
   ${CART_DEPS}
-`;
-
-export const CUSTOMER_QUERY = /* GraphQL */ `
-  query Customer($token: String!) {
-    customer(customerAccessToken: $token) {
-      id
-      firstName
-      lastName
-      email
-      phone
-      acceptsMarketing
-      defaultAddress {
-        ...AddressFields
-      }
-      addresses(first: 20) {
-        nodes {
-          ...AddressFields
-        }
-      }
-    }
-  }
-  ${ADDRESS_FRAGMENT}
-`;
-
-export const CUSTOMER_ORDERS_QUERY = /* GraphQL */ `
-  query CustomerOrders($token: String!, $first: Int!, $after: String) {
-    customer(customerAccessToken: $token) {
-      orders(first: $first, after: $after, sortKey: PROCESSED_AT, reverse: true) {
-        nodes {
-          id
-          orderNumber
-          name
-          processedAt
-          financialStatus
-          fulfillmentStatus
-          statusUrl
-          currentTotalPrice {
-            ...MoneyFields
-          }
-          subtotalPrice {
-            ...MoneyFields
-          }
-          totalShippingPrice {
-            ...MoneyFields
-          }
-          shippingAddress {
-            ...AddressFields
-          }
-          lineItems(first: 50) {
-            nodes {
-              title
-              quantity
-              variantTitle
-              originalTotalPrice {
-                ...MoneyFields
-              }
-              variant {
-                image {
-                  ...ImageFields
-                }
-              }
-            }
-          }
-        }
-        pageInfo {
-          hasNextPage
-          endCursor
-        }
-      }
-    }
-  }
-  ${MONEY_FRAGMENT}
-  ${IMAGE_FRAGMENT}
-  ${ADDRESS_FRAGMENT}
 `;
 
 export const SHOP_POLICIES_QUERY = /* GraphQL */ `

@@ -42,7 +42,7 @@ function useAppBootstrap() {
   const authReady = useAuth((s) => s.ready);
   const cartReady = useCart((s) => s.ready);
   const attachCustomer = useCart((s) => s.attachCustomer);
-  const token = useAuth((s) => s.token);
+  const accessToken = useAuth((s) => s.accessToken);
   const handledColdStart = useRef(false);
 
   useEffect(() => {
@@ -58,8 +58,8 @@ function useAppBootstrap() {
   // Linking the signed-in customer to the cart makes Shopify's hosted checkout
   // open pre-filled, which is most of the checkout speed win in the app.
   useEffect(() => {
-    if (token && cartReady) void attachCustomer(token);
-  }, [token, cartReady, attachCustomer]);
+    if (accessToken && cartReady) void attachCustomer(accessToken);
+  }, [accessToken, cartReady, attachCustomer]);
 
   useEffect(() => {
     const navigate = (payload: PushPayload | null | undefined) => {
@@ -100,8 +100,6 @@ function RootNavigator() {
       <Stack.Screen name="cart" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="checkout" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
       <Stack.Screen name="auth/sign-in" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="auth/register" options={{ presentation: 'modal' }} />
-      <Stack.Screen name="auth/forgot-password" options={{ presentation: 'modal' }} />
       <Stack.Screen name="orders/index" />
       <Stack.Screen name="addresses" />
       <Stack.Screen name="profile" />

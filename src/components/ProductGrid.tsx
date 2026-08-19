@@ -99,10 +99,10 @@ export function ProductGrid({
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: layout.screenPadding - spacing.xs, paddingBottom: spacing.xxl },
+  content: { paddingHorizontal: layout.screenPadding - spacing.sm, paddingBottom: spacing.xxxl },
   contentEmpty: { flexGrow: 1 },
   column: { alignItems: 'flex-start' },
-  cell: { paddingHorizontal: spacing.xs, paddingBottom: spacing.xl },
+  cell: { paddingHorizontal: spacing.sm, paddingBottom: spacing.xxl },
   footer: { paddingVertical: spacing.xl, alignItems: 'center' },
   footerSpacer: { height: spacing.xxl },
 });

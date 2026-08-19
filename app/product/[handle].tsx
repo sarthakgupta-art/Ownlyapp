@@ -130,20 +130,20 @@ export default function ProductScreen() {
             accessibilityLabel={`See all ${product.vendor}`}
             onPress={() => router.push({ pathname: '/search', params: { q: product.vendor } })}
           >
-            <Text variant="eyebrow" tone="accent" uppercase>
+            <Text variant="eyebrow" tone="muted" uppercase>
               {product.vendor}
             </Text>
           </Pressable>
 
-          <Text variant="title" style={styles.title}>
+          <Text variant="display" style={styles.title}>
             {product.title}
           </Text>
 
           <View style={styles.priceRow}>
-            <Text variant="title">{formatMoney(price)}</Text>
+            <Text variant="heading">{formatMoney(price)}</Text>
             {off != null ? (
               <>
-                <Text variant="body" tone="faint" style={styles.strike}>
+                <Text variant="caption" tone="faint" style={styles.strike}>
                   {formatMoney(compareAt)}
                 </Text>
                 <Badge label={`${off}% off`} />
@@ -172,11 +172,11 @@ export default function ProductScreen() {
             <>
               <Divider />
               <View style={styles.section}>
-                <Text variant="heading">Description</Text>
+                <Text variant="title">Description</Text>
                 <Text
                   variant="body"
                   tone="secondary"
-                  numberOfLines={descriptionExpanded ? undefined : 6}
+                  numberOfLines={descriptionExpanded ? undefined : 7}
                   style={styles.description}
                 >
                   {description}
@@ -187,7 +187,7 @@ export default function ProductScreen() {
                     onPress={() => setDescriptionExpanded((v) => !v)}
                     hitSlop={8}
                   >
-                    <Text variant="caption" tone="accent">
+                    <Text variant="eyebrow" tone="muted" uppercase style={styles.readMore}>
                       {descriptionExpanded ? 'Show less' : 'Read more'}
                     </Text>
                   </Pressable>
@@ -200,7 +200,7 @@ export default function ProductScreen() {
             <>
               <Divider />
               <View style={styles.section}>
-                <Text variant="heading">Details</Text>
+                <Text variant="title">Details</Text>
                 {specs.map(({ spec, values }) =>
                   spec.display === 'chips' ? (
                     <View key={spec.key} style={styles.chipSpec}>
@@ -231,7 +231,7 @@ export default function ProductScreen() {
 
           <Divider />
           <View style={styles.section}>
-            <Text variant="heading">Ownly assurance</Text>
+            <Text variant="title">Ownly assurance</Text>
             <Text variant="caption" tone="secondary">
               Sourced from authorised international distributors. Every unit is checked before dispatch and shipped
               from India with tracking. Questions? {env.supportEmail}
@@ -271,14 +271,15 @@ export default function ProductScreen() {
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: spacing.xxl },
-  body: { padding: layout.screenPadding, gap: spacing.md },
-  title: { marginTop: spacing.xxs },
+  body: { padding: layout.screenPadding, paddingTop: spacing.xl, gap: spacing.md },
+  title: { marginTop: spacing.sm },
   priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.md, flexWrap: 'wrap' },
   strike: { textDecorationLine: 'line-through' },
   stockLine: { marginTop: spacing.xxs },
-  section: { gap: spacing.sm },
+  section: { gap: spacing.md, paddingVertical: spacing.sm },
   description: { marginTop: spacing.xxs },
-  specRow: { flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.xs },
+  readMore: { marginTop: spacing.sm },
+  specRow: { flexDirection: 'row', gap: spacing.md, paddingVertical: spacing.sm },
   specLabel: { width: 120 },
   specValue: { flex: 1 },
   chipSpec: { paddingVertical: spacing.sm, gap: spacing.sm },
@@ -290,14 +291,14 @@ const styles = StyleSheet.create({
     padding: layout.screenPadding,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundAlt,
   },
   saveButton: {
-    width: 54,
-    height: 54,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    width: 56,
+    height: 56,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.text,
     alignItems: 'center',
     justifyContent: 'center',
   },

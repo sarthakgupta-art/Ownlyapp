@@ -2,13 +2,13 @@ import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { AppHeader } from '@/components/AppHeader';
 import { Button } from '@/components/Button';
-import { Divider, Screen } from '@/components/Layout';
+import { Screen } from '@/components/Layout';
 import { Text } from '@/components/Text';
 import { Icon, type IconName } from '@/components/Icon';
 import { useAuth } from '@/store/auth';
 import { useWishlist } from '@/store/wishlist';
 import { env } from '@/config/env';
-import { colors, layout, radius, spacing } from '@/theme/tokens';
+import { colors, layout, spacing } from '@/theme/tokens';
 
 function MenuRow({
   label,
@@ -59,7 +59,7 @@ export default function AccountScreen() {
       <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
         {signedIn ? (
           <View style={styles.identity}>
-            <Text variant="title">{name || 'Welcome back'}</Text>
+            <Text variant="display">{name || 'Welcome back'}</Text>
             {customer?.email ? (
               <Text variant="caption" tone="muted">
                 {customer.email}
@@ -68,7 +68,7 @@ export default function AccountScreen() {
           </View>
         ) : accountsAvailable ? (
           <View style={styles.signInCard}>
-            <Text variant="heading">Sign in to Ownly Club</Text>
+            <Text variant="title">Sign in to Ownly Club</Text>
             <Text variant="caption" tone="muted" style={styles.signInBody}>
               Track orders, save addresses for a faster checkout, and keep your wishlist across devices. Shopify
               emails you a one-time code — no password needed.
@@ -81,7 +81,6 @@ export default function AccountScreen() {
           {signedIn ? (
             <>
               <MenuRow label="My orders" icon="bag" onPress={() => router.push('/orders')} />
-              <Divider inset={layout.screenPadding} />
               <MenuRow
                 label="Saved addresses"
                 detail={
@@ -92,9 +91,7 @@ export default function AccountScreen() {
                 icon="home"
                 onPress={() => router.push('/addresses')}
               />
-              <Divider inset={layout.screenPadding} />
               <MenuRow label="Profile" icon="user" onPress={() => router.push('/profile')} />
-              <Divider inset={layout.screenPadding} />
             </>
           ) : null}
           <MenuRow
@@ -103,7 +100,6 @@ export default function AccountScreen() {
             icon="heart"
             onPress={() => router.push('/(tabs)/wishlist')}
           />
-          <Divider inset={layout.screenPadding} />
           <MenuRow label="Notifications" icon="bell" onPress={() => router.push('/notifications')} />
         </View>
 
@@ -117,19 +113,16 @@ export default function AccountScreen() {
             icon="external"
             onPress={() => void Linking.openURL(`mailto:${env.supportEmail}`)}
           />
-          <Divider inset={layout.screenPadding} />
           <MenuRow
             label="Shipping & returns"
             icon="external"
             onPress={() => void Linking.openURL(`${env.storefrontUrl}/policies/refund-policy`)}
           />
-          <Divider inset={layout.screenPadding} />
           <MenuRow
             label="Privacy policy"
             icon="external"
             onPress={() => void Linking.openURL(`${env.storefrontUrl}/policies/privacy-policy`)}
           />
-          <Divider inset={layout.screenPadding} />
           <MenuRow
             label="Terms of service"
             icon="external"
@@ -153,32 +146,30 @@ const styles = StyleSheet.create({
   body: { paddingBottom: spacing.xxl },
   identity: { padding: layout.screenPadding, gap: spacing.xxs },
   signInCard: {
-    margin: layout.screenPadding,
-    padding: spacing.xl,
-    borderRadius: radius.lg,
-    backgroundColor: colors.backgroundAlt,
-    borderWidth: 1,
+    marginHorizontal: layout.screenPadding,
+    marginVertical: spacing.lg,
+    paddingVertical: spacing.xl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
   signInBody: { marginBottom: spacing.md },
   signInActions: { flexDirection: 'row', gap: spacing.md },
   flex: { flex: 1 },
   group: {
     marginHorizontal: layout.screenPadding,
-    borderRadius: radius.lg,
-    borderWidth: 1,
+    borderTopWidth: StyleSheet.hairlineWidth,
     borderColor: colors.border,
-    overflow: 'hidden',
-    backgroundColor: colors.surface,
   },
   groupLabel: { paddingHorizontal: layout.screenPadding, paddingTop: spacing.xl, paddingBottom: spacing.sm },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
+    gap: spacing.lg,
     paddingVertical: spacing.lg,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
   },
   rowText: { flex: 1, gap: 2 },
   signOut: { marginTop: spacing.xl, alignSelf: 'center' },

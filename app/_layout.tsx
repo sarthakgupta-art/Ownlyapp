@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
+import { useAppFonts } from '@/theme/fonts';
 import { useAuth } from '@/store/auth';
 import { useCart } from '@/store/cart';
 import { useWishlist } from '@/store/wishlist';
@@ -49,11 +50,13 @@ function useAppBootstrap() {
     void Promise.all([restoreAuth(), restoreCart(), restoreWishlist(), restorePreferences()]);
   }, [restoreAuth, restoreCart, restoreWishlist, restorePreferences]);
 
+  const fontsReady = useAppFonts();
+
   useEffect(() => {
-    if (authReady && cartReady) {
+    if (authReady && cartReady && fontsReady) {
       void SplashScreen.hideAsync();
     }
-  }, [authReady, cartReady]);
+  }, [authReady, cartReady, fontsReady]);
 
   // Linking the signed-in customer to the cart makes Shopify's hosted checkout
   // open pre-filled, which is most of the checkout speed win in the app.

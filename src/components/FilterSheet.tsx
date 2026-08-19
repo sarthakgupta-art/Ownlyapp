@@ -8,7 +8,7 @@ import { filterableAttributes } from '@/catalog/attributes';
 import { countActiveFilters, emptyFilters, type ActiveFilters } from '@/catalog/query';
 import type { Department } from '@/catalog/types';
 import type { SortOption } from '@/shopify/types';
-import { colors, layout, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, layout, radius, spacing } from '@/theme/tokens';
 
 export const sortOptions: SortOption[] = [
   { id: 'featured', label: 'Featured', sortKey: 'BEST_SELLING', reverse: false },
@@ -81,7 +81,7 @@ export function FilterSheet({
         <Pressable style={styles.backdropTap} onPress={onClose} accessibilityLabel="Close filters" />
         <View style={styles.sheet}>
           <View style={styles.handleRow}>
-            <Text variant="heading">Filter & sort</Text>
+            <Text variant="title">Filter &amp; sort</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={10}>
               <Icon name="close" size={22} />
             </Pressable>
@@ -175,7 +175,7 @@ export function FilterSheet({
                       onPress={() => setExpanded((c) => ({ ...c, [spec.key]: !isExpanded }))}
                       hitSlop={8}
                     >
-                      <Text variant="caption" tone="accent" style={styles.showAll}>
+                      <Text variant="eyebrow" tone="muted" uppercase style={styles.showAll}>
                         {isExpanded ? 'Show fewer' : `Show all ${values.length}`}
                       </Text>
                     </Pressable>
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   backdropTap: { flex: 1 },
   sheet: {
     maxHeight: '88%',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     overflow: 'hidden',
@@ -262,13 +262,14 @@ const styles = StyleSheet.create({
   priceRow: { flexDirection: 'row', gap: spacing.md },
   priceField: { flex: 1, gap: spacing.xxs },
   input: {
-    height: 44,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    height: 46,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
     paddingHorizontal: spacing.md,
     color: colors.text,
-    fontSize: 15,
+    fontFamily: fonts.body,
+    fontSize: 14,
   },
   showAll: { marginTop: spacing.sm },
   footer: {

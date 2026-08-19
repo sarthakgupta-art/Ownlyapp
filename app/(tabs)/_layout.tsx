@@ -4,10 +4,19 @@ import { Icon, type IconName } from '@/components/Icon';
 import { Text } from '@/components/Text';
 import { useCart } from '@/store/cart';
 import { departmentsWithFinder } from '@/catalog/departments';
-import { colors, layout, radius } from '@/theme/tokens';
+import { colors, fonts, layout } from '@/theme/tokens';
 
 function TabIcon({ name, focused }: { name: IconName; focused: boolean }) {
-  return <Icon name={name} size={23} color={focused ? colors.text : colors.textFaint} strokeWidth={focused ? 1.9 : 1.5} />;
+  // Hairline strokes throughout; weight alone carries the selected state, which
+  // keeps the bar quiet under full-bleed photography.
+  return (
+    <Icon
+      name={name}
+      size={21}
+      color={focused ? colors.text : colors.textFaint}
+      strokeWidth={focused ? 1.5 : 1.1}
+    />
+  );
 }
 
 /** Cart tab icon with a live item count. */
@@ -77,24 +86,25 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundAlt,
     borderTopColor: colors.border,
+    borderTopWidth: StyleSheet.hairlineWidth,
     height: layout.tabBarHeight,
-    paddingTop: 6,
+    paddingTop: 8,
   },
   tabItem: { paddingVertical: 2 },
-  tabLabel: { fontSize: 10, fontWeight: '500', letterSpacing: 0.2 },
+  tabLabel: { fontFamily: fonts.bodyMedium, fontSize: 9, letterSpacing: 1.1, textTransform: 'uppercase' },
   badge: {
     position: 'absolute',
-    top: -5,
-    right: -8,
-    minWidth: 17,
-    height: 17,
+    top: -6,
+    right: -9,
+    minWidth: 16,
+    height: 16,
     paddingHorizontal: 4,
-    borderRadius: radius.pill,
-    backgroundColor: colors.text,
+    borderRadius: 8,
+    backgroundColor: colors.accent,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { lineHeight: 14 },
+  badgeText: { lineHeight: 13 },
 });

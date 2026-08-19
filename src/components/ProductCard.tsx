@@ -4,13 +4,12 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { Text } from './Text';
 import { Icon } from './Icon';
-import { Badge } from './Layout';
 import { useWishlist } from '@/store/wishlist';
 import { discountPercent, formatMoney } from '@/lib/format';
 import type { ProductSummary } from '@/shopify/types';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, layout, spacing } from '@/theme/tokens';
 
-const BLUR_PLACEHOLDER = 'L6PZfSjE.AyE_3t7t7R**0o#DgR4';
+const BLUR_PLACEHOLDER = 'L9Ec:%00~q9F00_3IUM{00Rj%MRj';
 
 export interface ProductCardProps {
   product: ProductSummary;
@@ -20,6 +19,12 @@ export interface ProductCardProps {
   reason?: string;
 }
 
+/**
+ * Editorial product card: full-bleed portrait image, then quiet metadata
+ * beneath it. Nothing sits on top of the photograph except the save control and
+ * a sold-out rule, because badges and price chips over imagery are what makes a
+ * grid read as a marketplace rather than a boutique.
+ */
 function ProductCardComponent({ product, width, reason }: ProductCardProps) {
   const router = useRouter();
   const saved = useWishlist((s) => s.ids.includes(product.id));
@@ -28,8 +33,7 @@ function ProductCardComponent({ product, width, reason }: ProductCardProps) {
   const price = product.priceRange.minVariantPrice;
   const compareAt = product.compareAtPriceRange.maxVariantPrice;
   const off = discountPercent(price, compareAt);
-  const rangeHigh = product.priceRange.maxVariantPrice;
-  const hasRange = rangeHigh.amount !== price.amount;
+  const hasRange = product.priceRange.maxVariantPrice.amount !== price.amount;
 
   const open = useCallback(() => {
     router.push({ pathname: '/product/[handle]', params: { handle: product.handle } });
@@ -51,7 +55,7 @@ function ProductCardComponent({ product, width, reason }: ProductCardProps) {
           source={product.featuredImage?.url}
           placeholder={BLUR_PLACEHOLDER}
           contentFit="cover"
-          transition={180}
+          transition={220}
           style={styles.image}
           accessibilityIgnoresInvertColors
           alt={product.featuredImage?.altText ?? product.title}
@@ -62,42 +66,37 @@ function ProductCardComponent({ product, width, reason }: ProductCardProps) {
           accessibilityLabel={saved ? `Remove ${product.title} from wishlist` : `Save ${product.title} to wishlist`}
           accessibilityState={{ selected: saved }}
           onPress={onToggleSave}
-          hitSlop={10}
+          hitSlop={12}
           style={styles.saveButton}
         >
           <Icon
             name={saved ? 'heart-filled' : 'heart'}
-            size={18}
+            size={17}
+            strokeWidth={1.2}
             color={saved ? colors.danger : colors.text}
           />
         </Pressable>
 
         {!product.availableForSale ? (
           <View style={styles.soldOut}>
-            <Text variant="micro" tone="inverse" uppercase>
+            <Text variant="micro" tone="inverse" uppercase style={styles.soldOutLabel}>
               Sold out
             </Text>
-          </View>
-        ) : off != null ? (
-          <View style={styles.badgeSlot}>
-            <Badge label={`${off}% off`} />
           </View>
         ) : null}
       </View>
 
-      <Text variant="eyebrow" tone="muted" numberOfLines={1} style={styles.vendor}>
+      <Text variant="eyebrow" tone="muted" numberOfLines={1} uppercase style={styles.vendor}>
         {product.vendor}
       </Text>
-      <Text variant="caption" numberOfLines={2} style={styles.title}>
+      <Text variant="caption" tone="secondary" numberOfLines={2} style={styles.title}>
         {product.title}
       </Text>
 
       <View style={styles.priceRow}>
-        <Text variant="bodyStrong">
-          {hasRange ? `From ${formatMoney(price)}` : formatMoney(price)}
-        </Text>
+        <Text variant="captionStrong">{hasRange ? `From ${formatMoney(price)}` : formatMoney(price)}</Text>
         {off != null ? (
-          <Text variant="caption" tone="faint" style={styles.strike}>
+          <Text variant="micro" tone="faint" style={styles.strike}>
             {formatMoney(compareAt)}
           </Text>
         ) : null}
@@ -112,35 +111,27 @@ function ProductCardComponent({ product, width, reason }: ProductCardProps) {
   );
 }
 
-/**
- * Memoised because product grids re-render on every wishlist change, and the
- * card subscribes to its own saved state anyway.
- */
 export const ProductCard = memo(ProductCardComponent);
 
 const styles = StyleSheet.create({
-  card: { gap: spacing.xxs },
-  pressed: { opacity: 0.85 },
+  card: { gap: 1 },
+  pressed: { opacity: 0.9 },
   imageWrap: {
-    aspectRatio: 0.82,
-    borderRadius: radius.md,
+    aspectRatio: layout.productAspect,
     overflow: 'hidden',
     backgroundColor: colors.surfaceSunk,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
   },
   image: { width: '100%', height: '100%' },
   saveButton: {
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
-    width: 32,
-    height: 32,
-    borderRadius: radius.pill,
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.92)',
   },
-  badgeSlot: { position: 'absolute', left: spacing.sm, top: spacing.sm },
   soldOut: {
     position: 'absolute',
     left: 0,
@@ -148,11 +139,12 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingVertical: spacing.xs,
     alignItems: 'center',
-    backgroundColor: colors.overlay,
+    backgroundColor: colors.scrim,
   },
+  soldOutLabel: { letterSpacing: 1.4 },
   vendor: { marginTop: spacing.xxs },
-  title: { minHeight: 36 },
-  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm },
+  title: { minHeight: 36, marginTop: spacing.xxs },
+  priceRow: { flexDirection: 'row', alignItems: 'baseline', gap: spacing.sm, marginTop: spacing.xxs },
   strike: { textDecorationLine: 'line-through' },
-  reason: { marginTop: spacing.xxs },
+  reason: { marginTop: spacing.xs },
 });

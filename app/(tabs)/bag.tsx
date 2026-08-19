@@ -11,7 +11,7 @@ import { useCart } from '@/store/cart';
 import { useAuth } from '@/store/auth';
 import { formatMoney, pluralise } from '@/lib/format';
 import { isShopifyConfigured } from '@/config/env';
-import { colors, layout, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, layout, radius, spacing } from '@/theme/tokens';
 
 export default function BagScreen() {
   const router = useRouter();
@@ -168,13 +168,14 @@ const styles = StyleSheet.create({
   appliedRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   input: {
     flex: 1,
-    height: 44,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    height: 46,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
     paddingHorizontal: spacing.md,
     color: colors.text,
-    fontSize: 15,
+    fontFamily: fonts.body,
+    fontSize: 14,
   },
   error: { marginTop: spacing.xs },
   summary: {

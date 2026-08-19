@@ -15,9 +15,12 @@
     "check": "npm run lint && npm test",
     "push:serve": "node server/push-server.mjs serve",
     "push:stats": "node server/push-server.mjs stats",
-    "doctor": "node scripts/doctor.mjs"
+    "doctor": "node scripts/doctor.mjs",
+    "icons": "node scripts/make-icons.mjs"
   },
   "dependencies": {
+    "@expo-google-fonts/cormorant-garamond": "^0.4.1",
+    "@expo-google-fonts/jost": "^0.4.2",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@tanstack/react-query": "^5.101.4",
     "expo": "^57.0.14",
@@ -31,6 +34,7 @@
     "expo-font": "~57.0.1",
     "expo-haptics": "~57.0.1",
     "expo-image": "~57.0.3",
+    "expo-linear-gradient": "~57.0.1",
     "expo-linking": "~57.0.6",
     "expo-notifications": "~57.0.12",
     "expo-router": "~57.0.14",

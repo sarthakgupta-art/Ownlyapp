@@ -1,10 +1,9 @@
-import { ActivityIndicator, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { Platform } from 'react-native';
 import { Text } from './Text';
 import { colors, layout, radius, spacing } from '@/theme/tokens';
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'onImage';
 type Size = 'sm' | 'md' | 'lg';
 
 export interface ButtonProps {
@@ -15,14 +14,14 @@ export interface ButtonProps {
   loading?: boolean;
   disabled?: boolean;
   full?: boolean;
-  /** Rendered before the label, e.g. a small icon. */
   leading?: React.ReactNode;
   style?: ViewStyle;
   accessibilityHint?: string;
 }
 
-const heights: Record<Size, number> = { sm: 36, md: 46, lg: 54 };
+const heights: Record<Size, number> = { sm: 38, md: 48, lg: 56 };
 
+/** Squared-off, wide-tracked caps — the register of a boutique, not an app store. */
 export function Button({
   label,
   onPress,
@@ -36,12 +35,11 @@ export function Button({
   accessibilityHint,
 }: ButtonProps) {
   const inert = disabled || loading;
+  const inverse = variant === 'primary' || variant === 'danger';
 
   const handlePress = () => {
     if (inert) return;
-    if (Platform.OS !== 'web') {
-      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }
+    if (Platform.OS !== 'web') void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
   };
 
@@ -64,14 +62,11 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' || variant === 'danger' ? colors.onPrimary : colors.text} />
+        <ActivityIndicator color={inverse ? colors.onPrimary : colors.text} size="small" />
       ) : (
         <View style={styles.content}>
           {leading}
-          <Text
-            variant={size === 'sm' ? 'caption' : 'bodyStrong'}
-            tone={variant === 'primary' || variant === 'danger' ? 'inverse' : 'default'}
-          >
+          <Text variant="button" tone={inverse || variant === 'onImage' ? 'inverse' : 'default'} uppercase>
             {label}
           </Text>
         </View>
@@ -82,20 +77,22 @@ export function Button({
 
 const variantStyles: Record<Variant, ViewStyle> = {
   primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderStrong },
+  secondary: { backgroundColor: 'transparent', borderWidth: StyleSheet.hairlineWidth, borderColor: colors.text },
   ghost: { backgroundColor: 'transparent' },
   danger: { backgroundColor: colors.danger },
+  // Sits over photography; the hairline keeps it legible on a busy image.
+  onImage: { backgroundColor: 'rgba(17,17,17,0.55)', borderWidth: StyleSheet.hairlineWidth, borderColor: 'rgba(255,255,255,0.6)' },
 };
 
 const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     paddingHorizontal: spacing.xl,
   },
   content: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   full: { alignSelf: 'stretch' },
-  pressed: { opacity: 0.82 },
-  disabled: { opacity: 0.45 },
+  pressed: { opacity: 0.75 },
+  disabled: { opacity: 0.35 },
 });

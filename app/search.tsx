@@ -10,7 +10,7 @@ import { useDepartmentProducts, usePredictiveSearch } from '@/hooks/useCatalog';
 import { getDepartment, primaryDepartment } from '@/catalog/departments';
 import { usePreferences } from '@/store/preferences';
 import { formatMoney } from '@/lib/format';
-import { colors, layout, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, layout, radius, spacing } from '@/theme/tokens';
 
 /** Predictive search fires per keystroke; this keeps it to one request a beat. */
 function useDebounced<T>(value: T, delay = 250): T {
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: colors.surfaceSunk,
   },
-  input: { flex: 1, color: colors.text, fontSize: 15 },
+  input: { flex: 1, color: colors.text, fontFamily: fonts.body, fontSize: 14 },
   suggestions: { paddingBottom: spacing.xxl },
   suggestionHeader: {
     flexDirection: 'row',

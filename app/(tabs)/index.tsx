@@ -3,6 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppHeader } from '@/components/AppHeader';
+import { Hero } from '@/components/Hero';
 import { ProductRail } from '@/components/ProductRail';
 import { Chip, RefreshableScroll, Screen, SectionHeader, Spacer } from '@/components/Layout';
 import { Text } from '@/components/Text';
@@ -14,9 +15,8 @@ import { useProductsByIds, useRail } from '@/hooks/useCatalog';
 import { usePreferences } from '@/store/preferences';
 import { useWishlist } from '@/store/wishlist';
 import { isShopifyConfigured } from '@/config/env';
-import { colors, layout, radius, spacing } from '@/theme/tokens';
+import { colors, layout, spacing } from '@/theme/tokens';
 
-/** One configured rail. Rendering per-rail keeps each query independent. */
 function Rail({ department, rail }: { department: Department; rail: HomeRail }) {
   const router = useRouter();
   const { data, isLoading } = useRail(department, rail);
@@ -37,42 +37,39 @@ function Rail({ department, rail }: { department: Department; rail: HomeRail }) 
   );
 }
 
-/** Continue-browsing rail built from locally stored recently-viewed ids. */
 function RecentlyViewed() {
   const recentIds = useWishlist((s) => s.recentIds);
-  const ids = recentIds.slice(0, 10);
-  const { data } = useProductsByIds(ids);
-
+  const { data } = useProductsByIds(recentIds.slice(0, 10));
   if (!data || data.length < 2) return null;
-  return <ProductRail title="Pick up where you left off" products={data} />;
+  return <ProductRail title="Recently viewed" products={data} />;
 }
 
-function FinderPromo({ department }: { department: Department }) {
+/** Quiet, full-width invitation to the quiz — a rule and a line of serif, no card. */
+function FinderInvite({ department }: { department: Department }) {
   const router = useRouter();
   if (!department.finder) return null;
 
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={department.finder.ctaLabel}
       onPress={() => router.push({ pathname: '/(tabs)/finder', params: { department: department.id } })}
-      style={({ pressed }) => [styles.promo, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.invite, pressed && styles.pressed]}
     >
-      <View style={styles.promoText}>
-        <Text variant="eyebrow" tone="accent" uppercase>
-          Not sure where to start
+      <Text variant="eyebrow" tone="accent" uppercase>
+        Not sure where to start
+      </Text>
+      <Text variant="title" style={styles.inviteTitle}>
+        {department.finder.title}
+      </Text>
+      <Text variant="caption" tone="muted" style={styles.inviteBody}>
+        {department.finder.subtitle}
+      </Text>
+      <View style={styles.inviteCta}>
+        <Text variant="button" uppercase>
+          {department.finder.ctaLabel}
         </Text>
-        <Text variant="title" tone="inverse" style={styles.promoTitle}>
-          {department.finder.title}
-        </Text>
-        <Text variant="caption" tone="inverse" style={styles.promoBody}>
-          {department.finder.subtitle}
-        </Text>
-        <View style={styles.promoCta}>
-          <Text variant="caption" tone="inverse">
-            {department.finder.ctaLabel}
-          </Text>
-          <Icon name="chevron-right" size={15} color={colors.textInverse} />
-        </View>
+        <Icon name="chevron-right" size={14} strokeWidth={1.2} />
       </View>
     </Pressable>
   );
@@ -87,6 +84,11 @@ export default function HomeScreen() {
 
   const department = getDepartment(departmentId) ?? primaryDepartment;
 
+  // The hero borrows the first product of the department's lead rail, so it
+  // always shows something real and in stock.
+  const leadRail = department.rails[0];
+  const { data: leadProducts } = useRail(department, leadRail ?? { id: 'hero', title: '', limit: 1 });
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await queryClient.invalidateQueries({ queryKey: ['rail'] });
@@ -99,12 +101,17 @@ export default function HomeScreen() {
     <Screen>
       <AppHeader brand showSearch />
       <RefreshableScroll refreshing={refreshing} onRefresh={onRefresh}>
+        <Hero
+          eyebrow="Sourced worldwide"
+          title={department.id === 'fragrance' ? 'The\nfragrance\nedit' : department.label}
+          subtitle={department.tagline}
+          ctaLabel="Shop the edit"
+          product={leadProducts?.[0]}
+          onPress={() => router.push({ pathname: '/(tabs)/shop', params: { department: department.id } })}
+        />
+
         {departments.length > 1 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.departmentBar}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.departmentBar}>
             {departments.map((dept) => (
               <Chip
                 key={dept.id}
@@ -114,41 +121,32 @@ export default function HomeScreen() {
               />
             ))}
           </ScrollView>
-        ) : null}
-
-        <View style={styles.hero}>
-          <Text variant="display">{department.label}</Text>
-          <Text variant="body" tone="muted" style={styles.heroTagline}>
-            {department.tagline}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push('/search')}
-            style={({ pressed }) => [styles.searchBar, pressed && styles.pressed]}
-          >
-            <Icon name="search" size={18} color={colors.textMuted} />
-            <Text variant="body" tone="muted">
-              Search brands and products
-            </Text>
-          </Pressable>
-        </View>
+        ) : (
+          <Spacer size={spacing.sm} />
+        )}
 
         {department.rails.map((rail) => (
           <Rail key={rail.id} department={department} rail={rail} />
         ))}
 
-        <Spacer size={spacing.xl} />
-        <FinderPromo department={department} />
-
+        <FinderInvite department={department} />
         <RecentlyViewed />
 
         <SectionHeader
-          title="Browse by brand"
-          subtitle="Every house Ownly stocks"
-          actionLabel="See all"
+          title="Browse by house"
+          subtitle="Every brand Ownly stocks"
+          actionLabel="View all"
           onAction={() => router.push({ pathname: '/(tabs)/shop', params: { department: department.id } })}
         />
-        <Spacer size={spacing.xxl} />
+
+        <View style={styles.footer}>
+          <Text variant="eyebrow" tone="faint" uppercase center>
+            Ownly Club
+          </Text>
+          <Text variant="micro" tone="faint" center style={styles.footerLine}>
+            Authenticated luxury fragrance and beauty, shipped across India.
+          </Text>
+        </View>
       </RefreshableScroll>
     </Screen>
   );
@@ -156,32 +154,23 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   departmentBar: {
+    flexDirection: 'row',
+    gap: spacing.sm,
     paddingHorizontal: layout.screenPadding,
-    paddingTop: spacing.md,
-    gap: spacing.sm,
-    flexDirection: 'row',
+    paddingTop: spacing.xl,
   },
-  hero: { paddingHorizontal: layout.screenPadding, paddingTop: spacing.xl, gap: spacing.xs },
-  heroTagline: { maxWidth: 320 },
-  searchBar: {
-    marginTop: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    height: 46,
-    borderRadius: radius.md,
-    backgroundColor: colors.surfaceSunk,
-  },
-  promo: {
+  invite: {
+    marginTop: spacing.xxl,
     marginHorizontal: layout.screenPadding,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primary,
-    overflow: 'hidden',
+    paddingVertical: spacing.xl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.border,
   },
-  promoText: { padding: spacing.xl, gap: spacing.xs },
-  promoTitle: { marginTop: spacing.xs },
-  promoBody: { opacity: 0.8, maxWidth: 300 },
-  promoCta: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginTop: spacing.md },
-  pressed: { opacity: 0.85 },
+  inviteTitle: { marginTop: spacing.sm },
+  inviteBody: { marginTop: spacing.sm, maxWidth: 320 },
+  inviteCta: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.lg },
+  footer: { paddingVertical: spacing.xxxl, paddingHorizontal: layout.screenPadding, gap: spacing.sm },
+  footerLine: { maxWidth: 280, alignSelf: 'center' },
+  pressed: { opacity: 0.7 },
 });

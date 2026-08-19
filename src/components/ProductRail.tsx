@@ -19,7 +19,9 @@ function Separator() {
 export function ProductRail({ title, subtitle, products, onSeeAll }: ProductRailProps) {
   const { width } = useWindowDimensions();
   // Two-and-a-bit cards visible, which reads as "there is more to the right".
-  const cardWidth = Math.min(190, Math.max(150, (width - layout.screenPadding * 2 - spacing.md) / 2.35));
+  // Roughly 1.8 cards in view: large enough to read as editorial, still
+  // clearly scrollable.
+  const cardWidth = Math.min(260, Math.max(180, (width - layout.screenPadding * 2 - spacing.lg) / 1.8));
 
   if (products.length === 0) return null;
 
@@ -39,7 +41,7 @@ export function ProductRail({ title, subtitle, products, onSeeAll }: ProductRail
         contentContainerStyle={styles.content}
         ItemSeparatorComponent={Separator}
         showsHorizontalScrollIndicator={false}
-        snapToInterval={cardWidth + spacing.md}
+        snapToInterval={cardWidth + spacing.lg}
         decelerationRate="fast"
       />
     </>
@@ -48,5 +50,5 @@ export function ProductRail({ title, subtitle, products, onSeeAll }: ProductRail
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: layout.screenPadding, paddingBottom: spacing.sm },
-  separator: { width: spacing.md },
+  separator: { width: spacing.lg },
 });

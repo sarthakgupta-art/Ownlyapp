@@ -4,7 +4,7 @@ import { Text } from './Text';
 import { Icon } from './Icon';
 import { Divider } from './Layout';
 import { AppHeader } from './AppHeader';
-import { colors, layout, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, layout, radius, spacing } from '@/theme/tokens';
 
 export interface PickerOption {
   value: string;
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     backgroundColor: colors.surfaceSunk,
   },
-  search: { flex: 1, color: colors.text, fontSize: 15 },
+  search: { flex: 1, color: colors.text, fontFamily: fonts.body, fontSize: 14 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

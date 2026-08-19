@@ -22,26 +22,18 @@ export interface TextProps extends RNTextProps {
   uppercase?: boolean;
 }
 
-/** Every string in the app renders through here, so type scale stays consistent. */
-export function Text({
-  variant = 'body',
-  tone = 'default',
-  center,
-  uppercase,
-  style,
-  ...rest
-}: TextProps) {
+/**
+ * Every string in the app renders through here.
+ *
+ * Variants carry their own `fontFamily`, so nothing downstream has to know
+ * which face a given role uses — changing the pairing is a one-file edit.
+ */
+export function Text({ variant = 'body', tone = 'default', center, uppercase, style, ...rest }: TextProps) {
   const base = typography[variant] as TextStyle;
   return (
     <RNText
       {...rest}
-      style={[
-        base,
-        { color: toneColor[tone] },
-        center && styles.center,
-        uppercase && styles.uppercase,
-        style,
-      ]}
+      style={[base, { color: toneColor[tone] }, center && styles.center, uppercase && styles.uppercase, style]}
     />
   );
 }

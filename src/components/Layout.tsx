@@ -52,7 +52,7 @@ export function SectionHeader({
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.flex}>
-        <Text variant="heading">{title}</Text>
+        <Text variant="title">{title}</Text>
         {subtitle ? (
           <Text variant="caption" tone="muted" style={styles.sectionSubtitle}>
             {subtitle}
@@ -66,10 +66,10 @@ export function SectionHeader({
           hitSlop={8}
           style={({ pressed }) => [styles.sectionAction, pressed && styles.pressed]}
         >
-          <Text variant="caption" tone="accent">
+          <Text variant="eyebrow" tone="muted" uppercase>
             {actionLabel}
           </Text>
-          <Icon name="chevron-right" size={14} color={colors.accent} />
+          <Icon name="chevron-right" size={13} strokeWidth={1.2} color={colors.textMuted} />
         </Pressable>
       ) : null}
     </View>
@@ -102,11 +102,11 @@ export function EmptyState({
 }) {
   return (
     <View style={styles.centered}>
-      <Text variant="heading" center>
+      <Text variant="title" center>
         {title}
       </Text>
       {body ? (
-        <Text variant="body" tone="muted" center style={styles.emptyBody}>
+        <Text variant="caption" tone="muted" center style={styles.emptyBody}>
           {body}
         </Text>
       ) : null}
@@ -126,10 +126,10 @@ export function ErrorState({
 }) {
   return (
     <View style={styles.centered}>
-      <Text variant="heading" center>
+      <Text variant="title" center>
         Something went wrong
       </Text>
-      <Text variant="body" tone="muted" center style={styles.emptyBody}>
+      <Text variant="caption" tone="muted" center style={styles.emptyBody}>
         {message}
       </Text>
       {onRetry ? <Button label="Try again" onPress={onRetry} variant="secondary" style={styles.emptyAction} /> : null}
@@ -173,7 +173,7 @@ export function Chip({
 }) {
   const content = (
     <View style={[styles.chip, selected && styles.chipSelected]}>
-      <Text variant="caption" tone={selected ? 'inverse' : 'secondary'}>
+      <Text variant="eyebrow" tone={selected ? 'inverse' : 'secondary'} uppercase>
         {label}
         {count != null ? `  ${count}` : ''}
       </Text>
@@ -193,12 +193,11 @@ export function Chip({
 }
 
 export function Badge({ label, tone = 'accent' }: { label: string; tone?: 'accent' | 'danger' | 'neutral' }) {
-  const background =
-    tone === 'danger' ? colors.dangerSoft : tone === 'neutral' ? colors.surfaceSunk : colors.accentSoft;
+  const borderColor = tone === 'danger' ? colors.danger : tone === 'neutral' ? colors.borderStrong : colors.accent;
   const textTone = tone === 'danger' ? 'danger' : tone === 'neutral' ? 'muted' : 'accent';
   return (
-    <View style={[styles.badge, { backgroundColor: background }]}>
-      <Text variant="micro" tone={textTone} uppercase>
+    <View style={[styles.badge, { borderColor }]}>
+      <Text variant="eyebrow" tone={textTone} uppercase>
         {label}
       </Text>
     </View>
@@ -216,8 +215,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     justifyContent: 'space-between',
     paddingHorizontal: layout.screenPadding,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.lg,
     gap: spacing.md,
   },
   sectionSubtitle: { marginTop: spacing.xxs },
@@ -231,20 +230,21 @@ const styles = StyleSheet.create({
   },
   centeredLabel: { marginTop: spacing.sm },
   emptyBody: { maxWidth: 320 },
-  emptyAction: { marginTop: spacing.md },
+  emptyAction: { marginTop: spacing.xl },
   chip: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
+    backgroundColor: 'transparent',
   },
   chipSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   badge: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: 4,
     borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
     alignSelf: 'flex-start',
   },
   pressed: { opacity: 0.7 },

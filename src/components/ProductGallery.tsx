@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, View, useWindowDimensions, type NativeScrollEvent
 import { Image } from 'expo-image';
 import { Text } from './Text';
 import type { Image as ShopifyImage } from '@/shopify/types';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, layout, radius, spacing } from '@/theme/tokens';
 
 export function ProductGallery({ images, title }: { images: ShopifyImage[]; title: string }) {
   const { width } = useWindowDimensions();
@@ -18,8 +18,12 @@ export function ProductGallery({ images, title }: { images: ShopifyImage[]; titl
     [width],
   );
 
+  // Portrait crop, matching the product grid, so the whole app shares one
+  // image rhythm rather than switching to square on the detail page.
+  const imageHeight = width / layout.productAspect;
+
   if (images.length === 0) {
-    return <View style={[styles.placeholder, { width, height: width }]} />;
+    return <View style={[styles.placeholder, { width, height: imageHeight }]} />;
   }
 
   return (
@@ -35,7 +39,7 @@ export function ProductGallery({ images, title }: { images: ShopifyImage[]; titl
             source={item.url}
             contentFit="cover"
             transition={200}
-            style={{ width, height: width }}
+            style={{ width, height: imageHeight }}
             alt={item.altText ?? title}
             accessibilityIgnoresInvertColors
           />
@@ -59,11 +63,11 @@ const styles = StyleSheet.create({
   placeholder: { backgroundColor: colors.surfaceSunk },
   counter: {
     position: 'absolute',
-    bottom: spacing.md,
+    bottom: spacing.lg,
     right: spacing.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.overlay,
+    borderRadius: radius.sm,
+    backgroundColor: colors.scrim,
   },
 });

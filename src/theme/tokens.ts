@@ -1,36 +1,45 @@
 /**
  * Design tokens for the Ownly Club app.
  *
- * The palette is deliberately restrained — near-black, warm ivory and a single
- * champagne accent — so that product photography carries the colour. Every
- * screen reads from these tokens; nothing hard-codes a hex value.
+ * The direction is minimal luxury — the register of Net-a-Porter or Sephora
+ * rather than a marketplace. That means three things, and every token below
+ * serves one of them:
+ *
+ *   1. Photography carries the colour. The palette is near-achromatic so a
+ *      bottle shot is never competing with the interface.
+ *   2. A high-contrast serif does the talking. Display type is Cormorant
+ *      Garamond; UI type is Jost. Mixing a bookish serif with a geometric sans
+ *      is what separates "boutique" from "catalogue".
+ *   3. Space is the luxury. Sizes below are deliberately generous; resist
+ *      tightening them to fit more in.
  */
 
 export const palette = {
-  ink: '#141414',
-  inkSoft: '#3A3A3A',
-  inkMuted: '#767676',
-  inkFaint: '#A6A6A6',
+  ink: '#111111',
+  inkSoft: '#3D3A36',
+  inkMuted: '#7A756E',
+  inkFaint: '#ADA79E',
 
   paper: '#FFFFFF',
-  paperWarm: '#FAF8F5',
-  paperSunk: '#F2EFEA',
+  /** Warm off-white used for whole screens, not just cards. */
+  paperWarm: '#FBF9F6',
+  paperSunk: '#F1EDE7',
 
-  line: '#E6E1DA',
-  lineStrong: '#D3CCC1',
+  line: '#E8E3DB',
+  lineStrong: '#D6CFC4',
 
-  champagne: '#B08D57',
-  champagneSoft: '#EFE3D2',
+  champagne: '#9A7B4F',
+  champagneSoft: '#F0E7D9',
 
-  success: '#1F7A44',
-  danger: '#B3261E',
-  dangerSoft: '#FBEAE8',
+  success: '#2F6B4F',
+  danger: '#9B2C2C',
+  dangerSoft: '#F7ECEC',
   info: '#2B5C8A',
 } as const;
 
 export const colors = {
-  background: palette.paper,
-  backgroundAlt: palette.paperWarm,
+  background: palette.paperWarm,
+  backgroundAlt: palette.paper,
   surface: palette.paper,
   surfaceSunk: palette.paperSunk,
 
@@ -54,10 +63,21 @@ export const colors = {
   dangerSoft: palette.dangerSoft,
   info: palette.info,
 
-  overlay: 'rgba(20, 20, 20, 0.45)',
+  overlay: 'rgba(17, 17, 17, 0.32)',
+  /** Sits under text laid over photography. */
+  scrim: 'rgba(17, 17, 17, 0.45)',
 } as const;
 
-/** 4pt base scale. Use `spacing.md` rather than a bare number. */
+export const fonts = {
+  display: 'CormorantGaramond_500Medium',
+  displayLight: 'CormorantGaramond_300Light',
+  displaySemi: 'CormorantGaramond_600SemiBold',
+  body: 'Jost_400Regular',
+  bodyMedium: 'Jost_500Medium',
+  bodySemi: 'Jost_600SemiBold',
+} as const;
+
+/** 4pt base scale. */
 export const spacing = {
   xxs: 2,
   xs: 4,
@@ -65,50 +85,64 @@ export const spacing = {
   md: 12,
   lg: 16,
   xl: 24,
-  xxl: 32,
-  xxxl: 48,
+  xxl: 36,
+  xxxl: 56,
 } as const;
 
 export const radius = {
   none: 0,
-  sm: 4,
-  md: 8,
-  lg: 14,
-  xl: 22,
+  /** Luxury retail is squared off; rounding reads as consumer-tech. */
+  sm: 2,
+  md: 3,
+  lg: 4,
+  xl: 6,
   pill: 999,
 } as const;
 
+/**
+ * Cormorant runs small for its point size, hence the large display values.
+ * Letter-spacing on caps labels is doing a lot of the editorial work.
+ */
 export const typography = {
-  display: { fontSize: 30, lineHeight: 36, fontWeight: '600' },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: '600' },
-  heading: { fontSize: 17, lineHeight: 23, fontWeight: '600' },
-  body: { fontSize: 15, lineHeight: 22, fontWeight: '400' },
-  bodyStrong: { fontSize: 15, lineHeight: 22, fontWeight: '600' },
-  caption: { fontSize: 13, lineHeight: 18, fontWeight: '400' },
-  micro: { fontSize: 11, lineHeight: 15, fontWeight: '500' },
-  /** Wide-tracked all-caps label used for section eyebrows and brand names. */
-  eyebrow: { fontSize: 11, lineHeight: 14, fontWeight: '600', letterSpacing: 1.4 },
+  hero: { fontFamily: fonts.displayLight, fontSize: 46, lineHeight: 52, letterSpacing: 0.5 },
+  display: { fontFamily: fonts.display, fontSize: 34, lineHeight: 40, letterSpacing: 0.3 },
+  title: { fontFamily: fonts.display, fontSize: 26, lineHeight: 32, letterSpacing: 0.2 },
+  heading: { fontFamily: fonts.displaySemi, fontSize: 19, lineHeight: 25 },
+
+  body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22 },
+  bodyStrong: { fontFamily: fonts.bodyMedium, fontSize: 14, lineHeight: 22 },
+  caption: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18 },
+  captionStrong: { fontFamily: fonts.bodyMedium, fontSize: 12.5, lineHeight: 18 },
+  micro: { fontFamily: fonts.body, fontSize: 10.5, lineHeight: 15 },
+
+  /** Wide-tracked caps for eyebrows, brand names and section labels. */
+  eyebrow: { fontFamily: fonts.bodyMedium, fontSize: 10, lineHeight: 14, letterSpacing: 1.8 },
+  /** The wordmark, and buttons. */
+  wordmark: { fontFamily: fonts.bodyMedium, fontSize: 13, lineHeight: 16, letterSpacing: 4.5 },
+  button: { fontFamily: fonts.bodyMedium, fontSize: 12.5, lineHeight: 16, letterSpacing: 1.4 },
 } as const;
 
 export const shadow = {
   card: {
     shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
   raised: {
     shadowColor: '#000',
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    shadowOffset: { width: 0, height: 10 },
     elevation: 6,
   },
 } as const;
 
 export const layout = {
-  screenPadding: spacing.lg,
-  tabBarHeight: 58,
+  screenPadding: 20,
+  tabBarHeight: 60,
   minTapTarget: 44,
+  /** Product imagery is portrait throughout; consistency matters more than fit. */
+  productAspect: 0.78,
 } as const;

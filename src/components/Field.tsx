@@ -1,7 +1,7 @@
 import { forwardRef } from 'react';
 import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
 import { Text } from './Text';
-import { colors, radius, spacing } from '@/theme/tokens';
+import { colors, fonts, radius, spacing } from '@/theme/tokens';
 
 export interface FieldProps extends TextInputProps {
   label: string;
@@ -42,14 +42,15 @@ export const Field = forwardRef<TextInput, FieldProps>(function Field(
 const styles = StyleSheet.create({
   container: { gap: spacing.xs },
   input: {
-    height: 48,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    height: 50,
+    borderRadius: radius.sm,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderStrong,
     paddingHorizontal: spacing.md,
     color: colors.text,
-    fontSize: 15,
-    backgroundColor: colors.surface,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    backgroundColor: colors.backgroundAlt,
   },
   inputError: { borderColor: colors.danger },
 });

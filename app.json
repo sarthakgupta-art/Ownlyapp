@@ -4,17 +4,24 @@
     "slug": "ownly-club",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": ["ownly", "shop.94983258393.ownly"],
+    "scheme": [
+      "ownly",
+      "shop.94983258393.ownly"
+    ],
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "primaryColor": "#141414",
-    "backgroundColor": "#FFFFFF",
-    "assetBundlePatterns": ["**/*"],
+    "primaryColor": "#111111",
+    "backgroundColor": "#FBF9F6",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "in.ownlyclub.app",
       "buildNumber": "1",
-      "associatedDomains": ["applinks:ownlyclub.in"],
+      "associatedDomains": [
+        "applinks:ownlyclub.in"
+      ],
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "Used only if you choose to upload a photo when contacting support.",
@@ -26,20 +33,30 @@
       "versionCode": 1,
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
-        "backgroundColor": "#141414"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#111111"
       },
       "intentFilters": [
         {
           "action": "VIEW",
           "autoVerify": true,
-          "data": [{ "scheme": "https", "host": "ownlyclub.in" }],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "data": [
+            {
+              "scheme": "https",
+              "host": "ownlyclub.in"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
     "web": {
       "bundler": "metro",
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       "expo-router",
@@ -48,23 +65,29 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#141414",
-          "imageWidth": 180,
+          "image": "./assets/splash-icon.png",
+          "backgroundColor": "#111111",
+          "imageWidth": 170,
           "resizeMode": "contain"
         }
       ],
       [
         "expo-notifications",
         {
-          "color": "#141414",
+          "color": "#9A7B4F",
           "defaultChannel": "default"
         }
       ],
       [
         "expo-build-properties",
         {
-          "android": { "compileSdkVersion": 36, "targetSdkVersion": 36 },
-          "ios": { "deploymentTarget": "16.4" }
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          },
+          "ios": {
+            "deploymentTarget": "16.4"
+          }
         }
       ]
     ],
@@ -76,6 +99,7 @@
       "eas": {
         "projectId": "00000000-0000-0000-0000-000000000000"
       }
-    }
+    },
+    "icon": "./assets/icon.png"
   }
 }

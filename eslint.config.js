@@ -16,10 +16,21 @@ module.exports = defineConfig([
     },
   },
   {
-    // The push server is plain Node, not React Native, so it has Node globals.
-    files: ['server/**/*.mjs'],
+    // Node tooling — the push server and the build scripts — is plain Node,
+    // not React Native, so it has Node globals rather than RN ones.
+    files: ['server/**/*.mjs', 'scripts/**/*.mjs'],
     languageOptions: {
-      globals: { Buffer: 'readonly', process: 'readonly', console: 'readonly', fetch: 'readonly' },
+      globals: {
+        Buffer: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        URL: 'readonly',
+        URLSearchParams: 'readonly',
+        AbortController: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+      },
     },
   },
 ]);

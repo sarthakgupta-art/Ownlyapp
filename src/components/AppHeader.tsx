@@ -6,37 +6,47 @@ import { colors, layout, spacing } from '@/theme/tokens';
 
 export interface AppHeaderProps {
   title?: string;
-  /** Wordmark instead of a plain title, for the home screen. */
+  /** Wordmark instead of a title, for the home screen. */
   brand?: boolean;
   showBack?: boolean;
   showSearch?: boolean;
   right?: React.ReactNode;
   subtitle?: string;
+  /** Removes the hairline rule, for screens that open on full-bleed imagery. */
+  transparent?: boolean;
 }
 
-export function AppHeader({ title, brand, showBack, showSearch, right, subtitle }: AppHeaderProps) {
+export function AppHeader({
+  title,
+  brand,
+  showBack,
+  showSearch,
+  right,
+  subtitle,
+  transparent,
+}: AppHeaderProps) {
   const router = useRouter();
 
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, transparent && styles.transparent]}>
       <View style={styles.side}>
         {showBack ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={() => (router.canGoBack() ? router.back() : router.replace('/(tabs)'))}
-            hitSlop={10}
+            hitSlop={12}
             style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
           >
-            <Icon name="chevron-left" size={24} />
+            <Icon name="chevron-left" size={22} strokeWidth={1.2} />
           </Pressable>
         ) : null}
       </View>
 
       <View style={styles.center}>
         {brand ? (
-          <Text variant="eyebrow" style={styles.wordmark}>
-            OWNLY CLUB
+          <Text variant="wordmark" uppercase>
+            Ownly Club
           </Text>
         ) : (
           <>
@@ -44,7 +54,7 @@ export function AppHeader({ title, brand, showBack, showSearch, right, subtitle 
               {title}
             </Text>
             {subtitle ? (
-              <Text variant="micro" tone="muted" numberOfLines={1}>
+              <Text variant="micro" tone="muted" numberOfLines={1} style={styles.subtitle}>
                 {subtitle}
               </Text>
             ) : null}
@@ -58,10 +68,10 @@ export function AppHeader({ title, brand, showBack, showSearch, right, subtitle 
             accessibilityRole="button"
             accessibilityLabel="Search"
             onPress={() => router.push('/search')}
-            hitSlop={10}
+            hitSlop={12}
             style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
           >
-            <Icon name="search" size={21} />
+            <Icon name="search" size={19} strokeWidth={1.2} />
           </Pressable>
         ) : null}
         {right}
@@ -79,17 +89,13 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background,
   },
-  side: { minWidth: 44, flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  transparent: { borderBottomWidth: 0, backgroundColor: 'transparent' },
+  side: { minWidth: 40, flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   sideRight: { justifyContent: 'flex-end' },
   center: { flex: 1, alignItems: 'center' },
-  wordmark: { letterSpacing: 3 },
-  iconButton: {
-    width: 36,
-    height: 36,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pressed: { opacity: 0.6 },
+  subtitle: { marginTop: 1 },
+  iconButton: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
+  pressed: { opacity: 0.5 },
 });

@@ -1,0 +1,35 @@
+node_modules/
+.expo/
+dist/
+web-build/
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Native build output
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# Secrets & local config
+.env
+.env.local
+.env.*.local
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Expo / EAS
+expo-env.d.ts
+
+# Push server device store
+server/data/

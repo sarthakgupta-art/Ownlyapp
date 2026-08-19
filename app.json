@@ -1,0 +1,81 @@
+{
+  "expo": {
+    "name": "Ownly Club",
+    "slug": "ownly-club",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "ownly",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "primaryColor": "#141414",
+    "backgroundColor": "#FFFFFF",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "in.ownlyclub.app",
+      "buildNumber": "1",
+      "associatedDomains": ["applinks:ownlyclub.in"],
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Used only if you choose to upload a photo when contacting support.",
+        "NSPhotoLibraryUsageDescription": "Used only if you choose to attach an image when contacting support."
+      }
+    },
+    "android": {
+      "package": "in.ownlyclub.app",
+      "versionCode": 1,
+      "edgeToEdgeEnabled": true,
+      "adaptiveIcon": {
+        "backgroundColor": "#141414"
+      },
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [{ "scheme": "https", "host": "ownlyclub.in" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#141414",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#141414",
+          "defaultChannel": "default"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": { "compileSdkVersion": 36, "targetSdkVersion": 36 },
+          "ios": { "deploymentTarget": "16.4" }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}
